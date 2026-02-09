@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas Five Event Architecture - Complete Documentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Crimson+Pro:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap');
+        
+        :root {
+            --primary: #0066FF;
+            --secondary: #FF6B35;
+            --accent: #00D9FF;
+            --dark: #0A0E27;
+            --darker: #050812;
+            --light: #F8F9FA;
+            --gray: #8B92A7;
+            --success: #00C48C;
+            --warning: #FFB800;
+            --danger: #FF4757;
+            --purple: #9D4EDD;
+            --green: #06FFA5;
+            --sidebar-width: 280px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(0, 102, 255, 0.2);
+            padding: 2rem 0;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .sidebar-header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .nav-list {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent);
+            background: rgba(0, 217, 255, 0.05);
+            border-left-color: var(--accent);
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(0, 102, 255, 0.1);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 3rem;
+            max-width: 1200px;
+            position: relative;
+        }
+        
+        /* Section Styling */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 3rem;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(0, 102, 255, 0.3);
+        }
+        
+        .section-header h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        h3 {
+            font-family: 'Space Mono', monospace;
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem;
+        }
+        
+        h4 {
+            font-family: 'Space Mono', monospace;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+        
+        ul, ol {
+            margin: 1rem 0 1rem 2rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--light);
+        }
+        
+        /* Card Styling */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 102, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .card-title {
+            font-family: 'Space Mono', monospace;
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        /* Code Blocks */
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            color: var(--green);
+        }
+        
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, transparent, rgba(0, 102, 255, 0.1));
+            border-bottom-left-radius: 8px;
+        }
+        
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        /* Service Badge */
+        .service-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .service-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(157, 78, 221, 0.4);
+        }
+        
+        /* Workflow Diagram */
+        .workflow {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+        
+        .workflow-step {
+            background: rgba(0, 102, 255, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px 5px rgba(0, 102, 255, 0.2);
+            }
+        }
+        
+        .workflow-step h4 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+        
+        .workflow-arrow {
+            text-align: center;
+            color: var(--secondary);
+            font-size: 2rem;
+            margin: 0.5rem 0;
+        }
+        
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        tr:hover {
+            background: rgba(0, 102, 255, 0.05);
+        }
+        
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .nav-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Highlight Box */
+        .highlight {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(0, 217, 255, 0.1));
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .highlight strong {
+            color: var(--accent);
+        }
+        
+        /* Message Structure Diagram */
+        .message-diagram {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px dashed var(--secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .message-diagram .property {
+            margin: 0.5rem 0;
+            padding-left: 1rem;
+        }
+        
+        .message-diagram .property-name {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .message-diagram .property-value {
+            color: var(--green);
+        }
+        
+        /* Architecture Diagram */
+        .arch-diagram {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .arch-box {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.2), rgba(157, 78, 221, 0.2));
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem;
+            display: inline-block;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .arch-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+        }
+        
+        .arch-box h4 {
+            color: var(--accent);
+            margin: 0;
+        }
+        
+        .arch-arrow {
+            font-size: 2rem;
+            color: var(--secondary);
+            display: inline-block;
+            margin: 0 1rem;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: rgba(0, 196, 140, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .status-warning {
+            background: rgba(255, 184, 0, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
+        .status-danger {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 2rem 1rem;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 1001;
+                background: var(--primary);
+                border: none;
+                color: white;
+                padding: 0.75rem;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+        }
+        
+        .menu-toggle {
+            display: none;
+        }
+        
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.3), transparent);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1>Atlas Five</h1>
+            <p>Event Architecture Docs</p>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="#section-0" class="nav-link active" onclick="navigateToSection(0)">System Overview</a></li>
+            <li class="nav-item"><a href="#section-1" class="nav-link" onclick="navigateToSection(1)">What is a Microservice?</a></li>
+            <li class="nav-item"><a href="#section-2" class="nav-link" onclick="navigateToSection(2)">Complete Service Catalog</a></li>
+            <li class="nav-item"><a href="#section-3" class="nav-link" onclick="navigateToSection(3)">Azure Message Queue Architecture</a></li>
+            <li class="nav-item"><a href="#section-4" class="nav-link" onclick="navigateToSection(4)">The Rules Engine</a></li>
+            <li class="nav-item"><a href="#section-5" class="nav-link" onclick="navigateToSection(5)">Complete Transaction Flow</a></li>
+            <li class="nav-item"><a href="#section-6" class="nav-link" onclick="navigateToSection(6)">Service Dependencies</a></li>
+            <li class="nav-item"><a href="#section-7" class="nav-link" onclick="navigateToSection(7)">Advanced Flow Scenarios</a></li>
+            <li class="nav-item"><a href="#section-8" class="nav-link" onclick="navigateToSection(8)">Azure Service Implementation</a></li>
+            <li class="nav-item"><a href="#section-9" class="nav-link" onclick="navigateToSection(9)">Monitoring & Troubleshooting</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Section 0: System Overview -->
+        <section id="section-0" class="section active">
+            <div class="section-header">
+                <h2>System Overview</h2>
+                <p>Cloud-native, event-driven microservices ecosystem</p>
+            </div>
+            
+            <p>The <strong>Atlas Five Event Architecture</strong> is a cloud-native, event-driven microservices ecosystem built on Azure that processes complex financial transactions through dynamic rule-based orchestration. The architecture eliminates hardcoded service sequences by using a central <span class="status-badge status-success">EvaluateService</span> that acts as an intelligent traffic controller, directing payloads through various processing stages based on business rules and data state.</p>
+            
+            <h3>Core Architecture Principles</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Event-Driven Communication</div>
+                    <p>Services communicate via Azure Event Grid and Service Bus, ensuring loose coupling and high scalability.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Rules-Based Routing</div>
+                    <p>Business logic externalized into JSON rule sets, allowing dynamic workflow changes without code deployment.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Blob Storage for Payloads</div>
+                    <p>Large data payloads stored separately, metadata flows via events for optimal performance.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Multi-Tenant Support</div>
+                    <p>Built-in tenant isolation using GUIDs ensures secure multi-tenant operations.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Idempotency & Resilience</div>
+                    <p>Built-in retry patterns and circuit breakers ensure reliable transaction processing.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Microservice Independence</div>
+                    <p>Each service operates autonomously, can scale independently, and fail gracefully.</p>
+                </div>
+            </div>
+            
+            <h3>Architecture Flow</h3>
+            
+            <div class="arch-diagram">
+                <div class="arch-box">
+                    <h4>Entry Points</h4>
+                    <p>HTTP/Bulk Upload</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">
+                    <h4>Event Grid</h4>
+                    <p>Event Distribution</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">
+                    <h4>Service Bus</h4>
+                    <p>Queue Management</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">
+                    <h4>Microservices</h4>
+                    <p>Processing Logic</p>
+                </div>
+            </div>
+            
+            <div class="highlight">
+                <strong>Key Innovation:</strong> The architecture successfully prevents race conditions through rule dependencies, FIFO queue ordering, and state-based progression, while maintaining high throughput through parallel processing of independent workloads.
+            </div>
+        </section>
+        
+        <!-- Section 1: What is a Microservice? -->
+        <section id="section-1" class="section">
+            <div class="section-header">
+                <h2>What is a Microservice?</h2>
+                <p>Understanding the building blocks of Atlas Five</p>
+            </div>
+            
+            <p>In this architecture, a microservice is a specialized, independently deployable service with specific characteristics and responsibilities.</p>
+            
+            <h3>Key Characteristics</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">✓ Single Responsibility</div>
+                    <p>Each service does ONE specific job (enrich data, persist transactions, etc.)</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">⚡ Independent Operation</div>
+                    <p>Can run, scale, and fail independently without affecting other services</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">📡 Event-Based Communication</div>
+                    <p>Communicates through messages, not direct calls, ensuring loose coupling</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">🔄 Stateless Processing</div>
+                    <p>Each service instance is identical and stateless for horizontal scaling</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">📈 Scalable</div>
+                    <p>Individual services scale based on their specific load requirements</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">🛡️ Resilient</div>
+                    <p>Failure isolation with built-in retry and circuit breaker patterns</p>
+                </div>
+            </div>
+            
+            <h3>Benefits in Atlas Five</h3>
+            
+            <div class="workflow">
+                <h4>Modularity</h4>
+                <p>Easy to develop, test, and maintain individual services in isolation. Teams can work on different services simultaneously without conflicts.</p>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <h4>Scalability</h4>
+                <p>Scale only the services that need it. For example, scale EnrichmentService during peak processing while keeping other services at baseline capacity.</p>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <h4>Resilience</h4>
+                <p>Failure in one service doesn't cascade to others. Dead-letter queues and retry patterns ensure no data loss.</p>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <h4>Flexibility</h4>
+                <p>Can update or replace services without affecting the entire system. Deploy changes to individual services with zero downtime.</p>
+            </div>
+            
+            <div class="code-block">
+                <pre>// Example: Microservice Independence in Action
+
+EnrichmentService (Processing: 1000 req/min) → Scale to 5 instances
+TransactionService (Processing: 500 req/min)  → Keep at 2 instances  
+JEEnrichmentService (Processing: 300 req/min) → Keep at 1 instance
+
+Each service scales independently based on demand!</pre>
+            </div>
+        </section>
+        
+        <!-- Section 2: Complete Service Catalog -->
+        <section id="section-2" class="section">
+            <div class="section-header">
+                <h2>Complete Service Catalog</h2>
+                <p>All 40+ microservices in the Atlas Five ecosystem</p>
+            </div>
+            
+            <h3>Entry Points (Data Intake)</h3>
+            <div class="grid-3">
+                <span class="service-badge">ACEEntryPoint</span>
+                <span class="service-badge">HoldingsEntryPoint</span>
+                <span class="service-badge">BulkDataUploadEDA</span>
+            </div>
+            <p>Main HTTP entry point for transaction data, supports DTS→AGT conversion, holdings data processing, and bulk data upload for large batch processing.</p>
+            
+            <h3>Core Processing Services</h3>
+            <div class="card">
+                <div class="grid-3">
+                    <span class="service-badge">EvaluateService</span>
+                    <span class="service-badge">EnrichmentService</span>
+                    <span class="service-badge">TransactionService</span>
+                    <span class="service-badge">JournalEntryPersistServiceNew</span>
+                    <span class="service-badge">TgtPersistService</span>
+                </div>
+                <p style="margin-top: 1rem;">Central orchestrator using RulesEngine for business logic evaluation, primary transaction enrichment with account mapping, transaction creation and state management, journal entry persistence to database tables, and TGT data persistence.</p>
+            </div>
+            
+            <h3>Specialized Enrichment Services</h3>
+            <div class="card">
+                <div class="grid-3">
+                    <span class="service-badge">JEEnrichmentService</span>
+                    <span class="service-badge">DeemedEnrichmentService</span>
+                    <span class="service-badge">FATransactionService</span>
+                    <span class="service-badge">TalEnrichmentService</span>
+                    <span class="service-badge">AghEnrichmentService</span>
+                </div>
+                <p style="margin-top: 1rem;">Journal entry specific enrichment, special processing for deemed transactions, financial advisor transaction processing, TAL (Tax Allocation Ledger) enrichment, and AGH (Account Grouping Hierarchy) enrichment.</p>
+            </div>
+            
+            <h3>Workflow Management Services</h3>
+            <div class="card">
+                <div class="grid-3">
+                    <span class="service-badge">WorkflowInitializeService</span>
+                    <span class="service-badge">WorkflowManifestBuilderService</span>
+                    <span class="service-badge">WorkflowCreateTaskService</span>
+                    <span class="service-badge">WorkflowApproveService</span>
+                    <span class="service-badge">WorkflowRejectService</span>
+                    <span class="service-badge">WorkflowFinalApproveService</span>
+                    <span class="service-badge">WorkflowEntryPointService</span>
+                    <span class="service-badge">WorkflowCreateSynchService</span>
+                </div>
+                <p style="margin-top: 1rem;">Complete workflow management from initialization, manifest creation, task creation, approval and rejection handling, to final approval processing and synchronization.</p>
+            </div>
+            
+            <h3>Persistence Services</h3>
+            <div class="card">
+                <div class="grid-3">
+                    <span class="service-badge">PostTransactionPersistService</span>
+                    <span class="service-badge">PostGLPersistService</span>
+                    <span class="service-badge">AlhPersistService</span>
+                    <span class="service-badge">HoldingPersistService</span>
+                    <span class="service-badge">TalEntryPersistService</span>
+                </div>
+                <p style="margin-top: 1rem;">Post-transaction data persistence, general ledger persistence, ALH (Account Level Holdings) persistence, holdings data persistence, and TAL entry persistence.</p>
+            </div>
+            
+            <h3>Supporting Services</h3>
+            <div class="card">
+                <div class="grid-3">
+                    <span class="service-badge">ParserService</span>
+                    <span class="service-badge">OffsetService</span>
+                    <span class="service-badge">EliminationService</span>
+                    <span class="service-badge">ExceptionValidationService</span>
+                    <span class="service-badge">OmnibusCloneService</span>
+                    <span class="service-badge">EventQueueProcessorService</span>
+                    <span class="service-badge">DLQRecoveryService</span>
+                    <span class="service-badge">NtpService</span>
+                    <span class="service-badge">TGLReaderServiceTimer</span>
+                </div>
+                <p style="margin-top: 1rem;">Data parsing and format conversion, transaction offset processing, elimination processing, exception handling and validation, omnibus account cloning, event queue management, dead-letter queue recovery, network time protocol service, and timer-based TGL reading.</p>
+            </div>
+        </section>
+        
+        <!-- Section 3: Azure Message Queue Architecture -->
+        <section id="section-3" class="section">
+            <div class="section-header">
+                <h2>Azure Message Queue Architecture</h2>
+                <p>Message flow infrastructure and guarantees</p>
+            </div>
+            
+            <h3>Message Flow Infrastructure</h3>
+            
+            <div class="arch-diagram">
+                <div class="arch-box">
+                    <h4>Service A</h4>
+                    <p>(Producer)</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">
+                    <h4>Azure Event Grid</h4>
+                    <p>Event Distribution</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">
+                    <h4>Service B</h4>
+                    <p>(Consumer)</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 2rem 0;">
+                <span style="font-size: 2rem; color: var(--secondary);">↓</span>
+            </div>
+            
+            <div class="arch-diagram">
+                <div class="arch-box">
+                    <h4>Azure Service Bus Queues</h4>
+                    <p>Reliable Message Delivery</p>
+                </div>
+            </div>
+            
+            <h3>Key Components</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">1. Azure Event Grid</div>
+                    <p><strong>Purpose:</strong> Event distribution and routing</p>
+                    <p><strong>Function:</strong> Receives events from services and routes to appropriate subscriptions</p>
+                    <p><strong>Schema:</strong> Uses CloudEvents format for standardized event structure</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">2. Azure Service Bus Queues</div>
+                    <p><strong>Purpose:</strong> Reliable message delivery and processing</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>FIFO (First-In-First-Out) ordering guarantees</li>
+                        <li>Dead-lettering for failed messages</li>
+                        <li>Duplicate detection</li>
+                        <li>Transaction support</li>
+                        <li>Retry mechanisms</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">3. Azure Blob Storage</div>
+                    <p><strong>Purpose:</strong> Large payload storage</p>
+                    <p><strong>Function:</strong> Stores actual transaction/journal data while only metadata flows through queues</p>
+                    <p><strong>Benefits:</strong> Reduces queue message size, improves performance</p>
+                </div>
+            </div>
+            
+            <h3>Message Structure</h3>
+            
+            <div class="message-diagram">
+                <div class="property">
+                    <span class="property-name">id:</span> <span class="property-value">guid-message-id</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">source:</span> <span class="property-value">ACEEntryPoint</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">specversion:</span> <span class="property-value">1.0</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">type:</span> <span class="property-value">ServiceName</span> <span style="color: var(--gray);">// Determines which service processes</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">dataschema:</span> <span class="property-value">string</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">subject:</span> <span class="property-value">transaction-processing</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">time:</span> <span class="property-value">2024-01-01T00:00:00Z</span>
+                </div>
+                <div class="property">
+                    <span class="property-name">data:</span> {
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">bloburl:</span> <span class="property-value">https://storageaccount/container/blob-name</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">tenant_Guid:</span> <span class="property-value">abc-123-tenant-guid</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">correlationid:</span> <span class="property-value">def-456-correlation-id</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">batchId:</span> <span class="property-value">batch-001</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">parentBatchId:</span> <span class="property-value">parent-batch-001</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">payloadtype:</span> <span class="property-value">transaction|journal|holding</span>
+                </div>
+                <div class="property">}</div>
+            </div>
+            
+            <h3>Queue Ordering and Guarantees</h3>
+            
+            <div class="card">
+                <div class="card-title">FIFO Ordering</div>
+                <ul>
+                    <li><strong>Per Queue Guarantee:</strong> Messages processed in exact order received</li>
+                    <li><strong>Critical for Dependencies:</strong> Ensures TransactionService runs before JEEnrichmentService</li>
+                    <li><strong>Example:</strong> If Message 1 = "Transaction" and Message 2 = "JEEnrichment", TransactionService will ALWAYS process first</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Message Locking</div>
+                <ul>
+                    <li><strong>Lock Duration:</strong> 30 seconds default (configurable)</li>
+                    <li><strong>Renewal:</strong> Services can renew locks if processing takes longer</li>
+                    <li><strong>Abandonment:</strong> Failed messages return to queue for retry</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Dead-Letter Handling</div>
+                <ul>
+                    <li><strong>Max Delivery Count:</strong> 10 attempts default</li>
+                    <li><strong>DLQ Reasons:</strong>
+                        <ul>
+                            <li>Exceeded delivery count</li>
+                            <li>Message TTL expired</li>
+                            <li>Evaluation exception</li>
+                            <li>Queue size exceeded</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- Section 4: The Rules Engine -->
+        <section id="section-4" class="section">
+            <div class="section-header">
+                <h2>The Rules Engine - Heart of the System</h2>
+                <p>Dynamic business logic evaluation</p>
+            </div>
+            
+            <p>The Rules Engine is the intelligent core of Atlas Five, evaluating business rules to determine which service should process a payload next. Rules are stored in JSON files located in the <code>/RuleSets/</code> directory.</p>
+            
+            <h3>Rules File Structure</h3>
+            
+            <div class="code-block">
+                <pre>{
+  "WorkflowName": "TransactionProcessing",
+  "Rules": [
+    {
+      "RuleName": "Enrich.ContextualData",
+      "Expression": "Transactions != null && Transactions.Count == 1 && (Transactions[0].isagtenriched == null || Convert.ToString(Transactions[0].isagtenriched).ToLower() == 'no')",
+      "SuccessEvent": "Enrichment",
+      "Enabled": true,
+      "ErrorMessage": "Enrichment is not needed as Enrichment Flag = $(Transactions[0].isagtenriched)"
+    }
+  ]
+}</pre>
+            </div>
+            
+            <h3>Rule Evaluation Process</h3>
+            
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h4>1. Expression Evaluation</h4>
+                    <p>Uses RulesEngine library for complex boolean logic</p>
+                    <p>Access to payload properties and methods</p>
+                    <p>Supports string conversion, null checks, comparisons</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>2. SuccessEvent Mapping</h4>
+                    <p><strong>Event Name → Service Name Mapping:</strong></p>
+                    <ul>
+                        <li>"Enrichment" → EnrichmentService</li>
+                        <li>"Transaction" → TransactionService</li>
+                        <li>"JEEnrichment" → JEEnrichmentService</li>
+                        <li>"JEPersist" → JournalEntryPersistServiceNew</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>Key Rules from Rules_V3_Evaluate.json</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Transaction Enrichment (Line 40-45)</div>
+                    <div class="code-block">
+                        <pre>{
+  "RuleName": "Enrich.ContextualData",
+  "Expression": "isagtenriched == null || isagtenriched == 'no'",
+  "SuccessEvent": "Enrichment"
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Transaction Creation (Line 47-52)</div>
+                    <div class="code-block">
+                        <pre>{
+  "RuleName": "Create.Transaction",
+  "Expression": "isagtenriched == 'yes' AND key == null",
+  "SuccessEvent": "Transaction"
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Journal Entry Enrichment (Line 75-80)</div>
+                    <div class="code-block">
+                        <pre>{
+  "RuleName": "Enrich.JournalEntry",
+  "Expression": "Key != null AND isjeenriched == 'no'",
+  "SuccessEvent": "JEEnrichment"
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Journal Entry Persistence (Line 82-87)</div>
+                    <div class="code-block">
+                        <pre>{
+  "RuleName": "Create.JournalEntry",
+  "Expression": "isjeenriched == 'yes' AND key != null",
+  "SuccessEvent": "JEPersist"
+}</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="highlight">
+                <strong>Key Insight:</strong> The rules create a natural dependency chain where each service checks the actual state of the data before processing, ensuring proper sequencing without hardcoded flows.
+            </div>
+        </section>
+        
+        <!-- Section 5: Complete Transaction Flow -->
+        <section id="section-5" class="section">
+            <div class="section-header">
+                <h2>Complete Transaction Flow with Real Examples</h2>
+                <p>Step-by-step walkthrough of transaction processing</p>
+            </div>
+            
+            <h3>Scenario: Normal Transaction Processing</h3>
+            
+            <h4>Initial State</h4>
+            <div class="message-diagram">
+                <div class="property">
+                    <span class="property-name">Transactions:</span> [{
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">agt_AccountNumber:</span> <span class="property-value">12345</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">agt_TransactionDate:</span> <span class="property-value">2024-01-01</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">isagtenriched:</span> <span class="property-value">null</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">key:</span> <span class="property-value">null</span> <span style="color: var(--gray);">// No AGT_ROW_ID yet</span>
+                </div>
+                <div class="property" style="padding-left: 2rem;">
+                    <span class="property-name">isjeenriched:</span> <span class="property-value">null</span>
+                </div>
+                <div class="property">}]</div>
+            </div>
+            
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h4>Step 1: ACEEntryPoint Intake</h4>
+                    <p>HTTP POST → ACEEntryPoint</p>
+                    <p>↓</p>
+                    <p>ACEEntryPoint converts DTS→AGT if needed</p>
+                    <p>↓</p>
+                    <p>Stores payload in Azure Blob Storage</p>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "Evaluate", "data": {"bloburl": "..."}}</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 2: EvaluateService First Check</h4>
+                    <p>EvaluateService receives "Evaluate" event</p>
+                    <p>↓</p>
+                    <p>Checks rules: "isagtenriched == null?" → <span class="status-badge status-success">TRUE</span></p>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "Enrichment"}</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 3: EnrichmentService Processing</h4>
+                    <p>EnrichmentService enriches transaction data:</p>
+                    <ul>
+                        <li>Maps account numbers</li>
+                        <li>Populates financial details</li>
+                        <li>Adds counterparty information</li>
+                    </ul>
+                    <p>↓</p>
+                    <p>Updates blob content:</p>
+                    <div class="code-block" style="margin-top: 1rem;">
+                        <pre>{
+  "Transactions": [{
+    "agt_AccountNumber": "12345",
+    "agt_TransactionDate": "2024-01-01",
+    "isagtenriched": "yes",     // ✅ Enriched
+    "key": null,
+    "isjeenriched": null
+  }]
+}</pre>
+                    </div>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "Evaluate"}</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 4: EvaluateService Second Check</h4>
+                    <p>EvaluateService receives updated payload</p>
+                    <p>↓</p>
+                    <p>Checks rules: "isagtenriched == 'yes' AND key == null?" → <span class="status-badge status-success">TRUE</span></p>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "Transaction"}</p>
+                    <p>↓</p>
+                    <p><span class="status-badge status-warning">FIFO Order:</span> TransactionService gets queue BEFORE any JE events</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 5: TransactionService Processing</h4>
+                    <p>TransactionService processes transaction:</p>
+                    <ul>
+                        <li>Creates record in dbo.agt_adv_glbl_trans_primary</li>
+                        <li>Gets AGT_ROW_ID = 78912 from database</li>
+                    </ul>
+                    <p>↓</p>
+                    <p>Updates blob content:</p>
+                    <div class="code-block" style="margin-top: 1rem;">
+                        <pre>{
+  "Transactions": [{
+    "agt_AccountNumber": "12345",
+    "agt_TransactionDate": "2024-01-01",
+    "isagtenriched": "yes",
+    "key": 78912,              // ✅ AGT_ROW_ID populated
+    "isjeenriched": null
+  }]
+}</pre>
+                    </div>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "Evaluate"}</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 6: EvaluateService Third Check</h4>
+                    <p>EvaluateService receives updated payload</p>
+                    <p>↓</p>
+                    <p>Checks rules:</p>
+                    <ul>
+                        <li>"key == null?" → FALSE (Transaction already created)</li>
+                        <li>"Key != null AND isjeenriched == 'no'?" → <span class="status-badge status-success">TRUE</span></li>
+                    </ul>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "JEEnrichment"}</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 7: JEEnrichmentService Processing</h4>
+                    <p>JEEnrichmentService has AGT_ROW_ID = 78912 available</p>
+                    <p>↓</p>
+                    <p>Enriches journal entry data:</p>
+                    <ul>
+                        <li>Calculates GL mappings</li>
+                        <li>Determines debit/credit amounts</li>
+                        <li>Maps GL accounts</li>
+                    </ul>
+                    <p>↓</p>
+                    <p>Updates blob content:</p>
+                    <div class="code-block" style="margin-top: 1rem;">
+                        <pre>{
+  "Transactions": [{
+    "agt_AccountNumber": "12345",
+    "agt_TransactionDate": "2024-01-01",
+    "isagtenriched": "yes",
+    "key": 78912,
+    "isjeenriched": "yes",    // ✅ JE Enriched
+    "je": [{ "debit": 1000, "credit": 1000, "glm_row_id": 35 }]
+  }]
+}</pre>
+                    </div>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "Evaluate"}</p>
+                </div>
+                
+                <div class="workflow-arrow">↓</div>
+                
+                <div class="workflow-step">
+                    <h4>Step 8: Final Journal Entry Persistence</h4>
+                    <p>EvaluateService checks: "isjeenriched == 'yes' AND key != null?" → <span class="status-badge status-success">TRUE</span></p>
+                    <p>↓</p>
+                    <p>Emits Event: {"type": "JEPersist"}</p>
+                    <p>↓</p>
+                    <p>JournalEntryPersistServiceNew processes:</p>
+                    <ul>
+                        <li>Creates gjs_gl_je_smmry records linked to agt_row_id = 78912</li>
+                        <li>Creates ged_gl_entry_dtl records</li>
+                        <li><span class="status-badge status-success">Transaction processing complete!</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 6: Service Dependencies -->
+        <section id="section-6" class="section">
+            <div class="section-header">
+                <h2>Service Dependencies and Race Condition Prevention</h2>
+                <p>How the architecture ensures correct ordering</p>
+            </div>
+            
+            <h3>How the Architecture Prevents Race Conditions</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">1. Natural Dependency Chain</div>
+                    <p>The rule expressions create natural checkpoints that enforce order:</p>
+                    <div class="code-block" style="margin-top: 1rem;">
+                        <pre>Enrichment:    isagtenriched == null
+Transaction:   isagtenriched == "yes" AND key == null
+JEEnrichment:  key != null AND isjeenriched == "no"
+JEPersist:     isjeenriched == "yes" AND key != null</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">2. FIFO Queue Ordering</div>
+                    <p>Azure Service Bus guarantees exact ordering:</p>
+                    <ul>
+                        <li>If Message A = "Transaction" and Message B = "JEEnrichment" are queued in that order</li>
+                        <li>TransactionService will ALWAYS process A before JEEnrichmentService processes B</li>
+                        <li>No parallel processing of the same payload</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">3. State-Based Rules</div>
+                    <p>Services check actual data state, not just sequence:</p>
+                    <ul>
+                        <li><code>key == null</code> vs <code>key != null</code> ensures transaction exists before JE processing</li>
+                        <li><code>isagtenriched == "yes"</code> ensures enrichment complete before transaction creation</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>What You See in Logs vs Reality</h3>
+            
+            <div class="card">
+                <div class="card-title">Apparent Parallel Processing</div>
+                <p>You might see logs showing:</p>
+                <div class="code-block">
+                    <pre>[10:00:01] TransactionService started processing batch-001
+[10:00:02] JEEnrichmentService started processing batch-002
+[10:00:03] TransactionService completed batch-001
+[10:00:04] JEEnrichmentService completed batch-002</pre>
+                </div>
+                <p><span class="status-badge status-warning">This is different batches processing in parallel, NOT the same payload!</span></p>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Actual Sequence for Single Payload</div>
+                <div class="code-block">
+                    <pre>[10:00:01] ACEEntryPoint received batch-001
+[10:00:02] EnrichmentService started batch-001
+[10:00:05] EnrichmentService completed batch-001
+[10:00:06] TransactionService started batch-001
+[10:00:08] TransactionService completed batch-001
+[10:00:09] JEEnrichmentService started batch-001
+[10:00:12] JEEnrichmentService completed batch-001
+[10:00:13] JournalEntryPersistServiceNew started batch-001
+[10:00:15] JournalEntryPersistServiceNew completed batch-001</pre>
+                </div>
+                <p><span class="status-badge status-success">Perfect sequential processing for the same payload!</span></p>
+            </div>
+            
+            <div class="highlight">
+                <strong>Critical Understanding:</strong> The architecture uses three layers of protection: state-based rule evaluation, FIFO queue ordering, and dependency checking. This triple protection ensures race conditions are impossible, even under high load.
+            </div>
+        </section>
+        
+        <!-- Section 7: Advanced Flow Scenarios -->
+        <section id="section-7" class="section">
+            <div class="section-header">
+                <h2>Advanced Flow Scenarios</h2>
+                <p>Complex transaction processing patterns</p>
+            </div>
+            
+            <h3>Scenario 1: TGT Persistence Parallel Processing</h3>
+            
+            <p>TGT (Target Grouping) doesn't depend on transaction creation, so it can run in parallel:</p>
+            
+            <div class="code-block">
+                <pre>// TGT Rule - Line 96-101
+{
+  "RuleName": "Create.TGTGrouping",
+  "Expression": "(tgt_persisted == null OR tgt_persisted == false) AND tgtgrouping != null",
+  "SuccessEvent": "TGTGrouping"
+}</pre>
+            </div>
+            
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h4>Flow Diagram</h4>
+                    <p>Enrichment → Transaction → Evaluate (triggers TGT AND JEEnrichment)</p>
+                    <p style="text-align: center; margin: 1rem 0;">↓</p>
+                    <p><span class="status-badge status-success">TGT runs in parallel</span></p>
+                    <p style="text-align: center; margin: 1rem 0;">↓</p>
+                    <p>JEEnrichment → JEPersist → Complete</p>
+                </div>
+            </div>
+            
+            <h3>Scenario 2: Workflow Approval Required</h3>
+            
+            <p>For transactions requiring approval:</p>
+            
+            <div class="code-block">
+                <pre>// Workflow Rule Example
+{
+  "RuleName": "Create.FirstTask",
+  "Expression": "workflow_manifest != null && workflow_manifest.Steps.All(x => x.StartedAt == null)",
+  "SuccessEvent": "WorkflowTaskCreate"
+}</pre>
+            </div>
+            
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h4>Approval Flow</h4>
+                    <p>ACE → Enrichment → WorkflowInitialize → WorkflowApprove → Transaction → JEEnrichment → JEPersist</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Key Points</div>
+                <ul>
+                    <li>Workflow steps are sequential and must be approved before proceeding</li>
+                    <li>WorkflowApproveService validates approval permissions</li>
+                    <li>Upon approval, transaction creation continues normally</li>
+                    <li>Rejection halts the process and logs the reason</li>
+                </ul>
+            </div>
+            
+            <h3>Scenario 3: Deemed Transaction Processing</h3>
+            
+            <p>Special handling for deemed transactions:</p>
+            
+            <div class="code-block">
+                <pre>// Deemed Rule - Line 61-66
+{
+  "RuleName": "Generate.Deemed",
+  "Expression": "dtt_row_id != null AND isdeemedenriched == 'No'",
+  "SuccessEvent": "DeemedEnrichment"
+}</pre>
+            </div>
+            
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h4>Deemed Transaction Flow</h4>
+                    <p>ACE → DeemedEnrichment → Enrichment → Transaction → JEEnrichment → JEPersist</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Deemed Transaction Characteristics</div>
+                <ul>
+                    <li>Requires special tax treatment and reporting</li>
+                    <li>Additional enrichment step before standard processing</li>
+                    <li>Links to deemed transaction type (dtt_row_id)</li>
+                    <li>Follows same dependency chain after deemed enrichment</li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- Section 8: Azure Service Implementation -->
+        <section id="section-8" class="section">
+            <div class="section-header">
+                <h2>Azure Service Implementation Details</h2>
+                <p>Technical implementation and configuration</p>
+            </div>
+            
+            <h3>Service Framework Architecture</h3>
+            
+            <h4>Base Classes</h4>
+            
+            <div class="code-block">
+                <pre>// All services inherit from:
+public abstract class AtlasExecutableTask&lt;T&gt; : AtlasBaseTask&lt;T&gt;
+{
+    // Handles blob storage operations
+    // Manages context and logging
+    // Provides error handling and retry logic
+}
+
+public abstract class AtlasBaseTask&lt;T&gt;
+{
+    // Common functionality for all services
+    // Event Grid integration
+    // Service Bus message handling
+    // Tenant isolation
+}</pre>
+            </div>
+            
+            <h4>Service Interfaces</h4>
+            
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">IQueueTask</div>
+                    <p>For Service Bus integration</p>
+                </div>
+                <div class="card">
+                    <div class="card-title">IBlobTask</div>
+                    <p>For Blob Storage operations</p>
+                </div>
+                <div class="card">
+                    <div class="card-title">IJsonTask</div>
+                    <p>For JSON payload processing</p>
+                </div>
+            </div>
+            
+            <h3>Service Configuration</h3>
+            
+            <div class="code-block">
+                <pre>// serviceDependencies.json Structure
+{
+  "properties": {
+    "type": "Microsoft.Web/sites",
+    "name": "EnrichmentService",
+    "location": "East US",
+    "properties": {
+      "siteConfig": {
+        "appSettings": [
+          {"name": "AzureWebJobsStorage", "value": "DefaultEndpointsProtocol=..."},
+          {"name": "EVENT_GRID_TOPIC_ENDPOINT", "value": "https://..."},
+          {"name": "SERVICE_BUS_CONNECTION", "value": "Endpoint=..."},
+          {"name": "BLOB_STORAGE_CONNECTION", "value": "DefaultEndpointsProtocol=..."}
+        ]
+      }
+    }
+  }
+}</pre>
+            </div>
+            
+            <h3>Azure Functions Integration</h3>
+            
+            <h4>Trigger Types</h4>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Event Grid Trigger</div>
+                    <div class="code-block">
+                        <pre>// Event Grid Trigger
+[FunctionName("EnrichmentService")]
+public async Task RunAsync(
+    [EventGridTrigger] EventGridEvent eventGridEvent,
+    ILogger log)</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Service Bus Trigger</div>
+                    <div class="code-block">
+                        <pre>// Service Bus Trigger
+[FunctionName("TransactionService")]
+public async Task RunAsync(
+    [ServiceBusTrigger("transaction-queue",
+    Connection = "SERVICE_BUS_CONNECTION")]
+    ServiceBusReceivedMessage message,
+    ILogger log)</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">HTTP Trigger</div>
+                    <div class="code-block">
+                        <pre>// HTTP Trigger (for Entry Points)
+[FunctionName("ACEEntryPoint")]
+public async Task&lt;IActionResult&gt; RunAsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous,
+    "post")] HttpRequest req,
+    ILogger log)</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <h3>Blob Storage Pattern</h3>
+            
+            <div class="card">
+                <div class="card-title">Payload Management</div>
+                <div class="code-block">
+                    <pre>// Reading payload
+var blobUrl = eventGridEvent.Data["bloburl"].ToString();
+var blobClient = new BlobClient(new Uri(blobUrl));
+var jsonContent = await blobClient.DownloadTextAsync();
+var payload = JsonSerializer.Deserialize&lt;TransactionPayload&gt;(jsonContent);
+
+// Updating payload
+payload.Transactions[0].isagtenriched = "yes";
+payload.Transactions[0].key = agtRowId;
+await blobClient.UploadAsync(
+    JsonSerializer.Serialize(payload),
+    overwrite: true);</pre>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 9: Monitoring & Troubleshooting -->
+        <section id="section-9" class="section">
+            <div class="section-header">
+                <h2>Monitoring and Troubleshooting</h2>
+                <p>Operational excellence and debugging</p>
+            </div>
+            
+            <h3>Key Metrics to Monitor</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Queue Metrics</div>
+                    <ul>
+                        <li><strong>Queue Length:</strong> Messages waiting in each service queue</li>
+                        <li><strong>Dead Letter Count:</strong> Failed messages requiring attention</li>
+                        <li><strong>Processing Time:</strong> Time taken by each service</li>
+                        <li><strong>Success Rate:</strong> Percentage of successful message processing</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Service Metrics</div>
+                    <ul>
+                        <li><strong>Invocation Count:</strong> How many times each service is called</li>
+                        <li><strong>Error Rate:</strong> Percentage of failed executions</li>
+                        <li><strong>Memory/CPU Usage:</strong> Resource utilization per service</li>
+                        <li><strong>Blob Storage Operations:</strong> Read/write latency and throughput</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>Troubleshooting Common Issues</h3>
+            
+            <div class="card">
+                <div class="card-title">1. Stuck Transaction</div>
+                <p><strong>Symptoms:</strong> Transaction stuck in queue, not progressing</p>
+                <p><strong>Causes:</strong></p>
+                <ul>
+                    <li>Rule expression not matching expected conditions</li>
+                    <li>Service experiencing errors and retrying</li>
+                    <li>Dead-letter queue accumulation</li>
+                </ul>
+                <p><strong>Debugging Steps:</strong></p>
+                <div class="code-block">
+                    <pre># Check queue lengths
+az servicebus queue show --namespace-name your-namespace --name enrichment-queue
+
+# Check dead-letter queue
+az servicebus queue show --namespace-name your-namespace --name enrichment-queue/$DeadLetterQueue
+
+# Check service logs
+az webapp log tail --name EnrichmentService --resource-group your-rg</pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">2. Race Condition Suspects</div>
+                <p><strong>Symptoms:</strong> JE processing before transaction creation</p>
+                <p><strong>Root Cause:</strong> Usually multiple events for same payload in wrong order</p>
+                <p><strong>Solution:</strong> Check rule expressions and ensure state flags are properly set</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">3. Missing AGT_ROW_ID</div>
+                <p><strong>Symptoms:</strong> JournalEntryPersistService cannot link to transaction</p>
+                <p><strong>Debugging:</strong></p>
+                <div class="code-block">
+                    <pre>-- Check if transaction was created
+SELECT agt_row_id, key FROM dbo.agt_adv_glbl_trans_primary
+WHERE correlationid = 'your-correlation-id';
+
+-- Check blob content for key field
+SELECT blob_content FROM your_logging_table
+WHERE correlationid = 'your-correlation-id';</pre>
+                </div>
+            </div>
+            
+            <h3>Logging Strategy</h3>
+            
+            <div class="card">
+                <div class="card-title">Structured Logging Format</div>
+                <div class="code-block">
+                    <pre>{
+  "timestamp": "2024-01-01T10:00:00Z",
+  "service": "TransactionService",
+  "correlationid": "def-456-correlation-id",
+  "tenant_guid": "abc-123-tenant-guid",
+  "operation": "CreateTransaction",
+  "status": "Success",
+  "duration_ms": 1250,
+  "agt_row_id": 78912,
+  "message": "Transaction created successfully"
+}</pre>
+                </div>
+            </div>
+            
+            <h4>Critical Log Points</h4>
+            <ul>
+                <li>Service start/completion</li>
+                <li>Rule evaluation results</li>
+                <li>Database operations</li>
+                <li>Error conditions with stack traces</li>
+                <li>Queue message processing</li>
+            </ul>
+            
+            <h3>Performance Optimization</h3>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Batch Processing</div>
+                    <ul>
+                        <li>Multiple transactions in single payload when possible</li>
+                        <li>Parallel processing of independent transactions</li>
+                        <li>Bulk database operations</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Queue Tuning</div>
+                    <div class="code-block">
+                        <pre>{
+  "prefetchCount": 100,
+  "maxConcurrentCalls": 10,
+  "messageLockDuration": "00:05:00",
+  "maxDeliveryCount": 5
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Blob Storage Optimization</div>
+                    <ul>
+                        <li>Use premium storage for high-frequency access</li>
+                        <li>Implement caching for frequently accessed rules</li>
+                        <li>Compress large payloads before storage</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>Conclusion</h3>
+            
+            <div class="highlight">
+                <p>The Atlas Five Event Architecture represents a sophisticated event-driven system that elegantly solves complex transaction processing challenges through:</p>
+                <ol>
+                    <li><strong>Rules-Based Orchestration:</strong> Eliminates hardcoded flows with dynamic rule evaluation</li>
+                    <li><strong>Natural Dependency Management:</strong> State-based rules ensure proper sequencing</li>
+                    <li><strong>Azure Integration:</strong> Leverages Azure's messaging guarantees and scalability</li>
+                    <li><strong>Microservice Independence:</strong> Each service operates autonomously within its domain</li>
+                    <li><strong>Built-in Resilience:</strong> Retry patterns, dead-letter handling, and error recovery</li>
+                </ol>
+                <p>The architecture successfully prevents race conditions through rule dependencies, FIFO queue ordering, and state-based progression, while maintaining high throughput through parallel processing of independent workloads.</p>
+            </div>
+        </section>
+        
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="navigatePrev()">
+                <span>←</span> Previous
+            </button>
+            <button class="nav-btn" id="nextBtn" onclick="navigateNext()">
+                Next <span>→</span>
+            </button>
+        </div>
+    </main>
+    
+    <script>
+        let currentSection = 0;
+        const totalSections = 10;
+        
+        function navigateToSection(sectionIndex) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(`section-${sectionIndex}`).classList.add('active');
+            
+            // Update nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            navLinks[sectionIndex].classList.add('active');
+            
+            // Update current section
+            currentSection = sectionIndex;
+            
+            // Update button states
+            updateNavigationButtons();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+        
+        function navigateNext() {
+            if (currentSection < totalSections - 1) {
+                navigateToSection(currentSection + 1);
+            }
+        }
+        
+        function navigatePrev() {
+            if (currentSection > 0) {
+                navigateToSection(currentSection - 1);
+            }
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentSection === 0;
+            nextBtn.disabled = currentSection === totalSections - 1;
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                navigatePrev();
+            } else if (e.key === 'ArrowRight') {
+                navigateNext();
+            }
+        });
+        
+        // Initialize
+        updateNavigationButtons();
+    </script>
+</body>
+</html>
