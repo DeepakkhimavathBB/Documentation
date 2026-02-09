@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFRuleProcessorService - System Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --bg-main: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid var(--border);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-header h2 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            color: var(--text-secondary);
+            font-size: 1.0rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-left-color: var(--accent);
+            padding-left: 2rem;
+        }
+
+        .nav-link.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1200px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .content-section {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-section h2 {
+            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-section h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .content-section p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .content-section ul {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-section li {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .content-section li::marker {
+            color: var(--accent);
+        }
+
+        /* Flow Diagram Styles */
+        .flow-diagram {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 2px solid var(--primary);
+        }
+
+        .flow-diagram pre {
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            white-space: pre;
+        }
+
+        /* Action Type Cards */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+        }
+
+        .action-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .action-card p {
+            font-size: 0.9rem;
+        }
+
+        /* Component List */
+        .component-list {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .component-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .component-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .component-item strong {
+            color: var(--accent);
+            font-size: 1.05rem;
+        }
+
+        /* Navigation Buttons */
+        .page-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nav-button.prev::before {
+            content: '←';
+            font-size: 1.2rem;
+        }
+
+        .nav-button.next::after {
+            content: '→';
+            font-size: 1.2rem;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box strong {
+            color: var(--accent);
+        }
+
+        /* Architecture Diagram Box */
+        .architecture-box {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--secondary);
+            margin: 1.5rem 0;
+        }
+
+        .architecture-box pre {
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        /* Enhanced Flow Diagram Styles */
+        .flow-diagram-enhanced {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden; /* Ensures animations don't stick out */
+        }
+
+        .flow-node {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            width: 80%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .flow-node:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+            border-left-color: var(--accent);
+        }
+
+        .flow-node-header {
+            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-node-body {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .flow-arrow {
+            width: 2px;
+            height: 50px;
+            background: var(--accent);
+            position: relative;
+            margin: 0;
+        }
+
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid var(--accent);
+        }
+
+        /* Animation Base Styles */
+        [data-animation] {
+            opacity: 0;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in-down {
+            transform: translateY(-30px);
+        }
+
+        .draw-line {
+            transform: scaleY(0);
+            transform-origin: top;
+        }
+
+        /* Animation Triggered State */
+        .is-visible {
+            opacity: 1 !important;
+            transform: translateY(0) scaleY(1) !important;
+        }
+        
+        .sidebar-download {
+            padding: 0 1.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Documentation</h2>
+                <p>DFRuleProcessorService</p>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#executive-summary" class="nav-link" data-page="executive-summary">Executive Summary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#goals-scope" class="nav-link" data-page="goals-scope">Goals and Scope</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#architecture" class="nav-link" data-page="architecture">High-Level Architecture</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#flow" class="nav-link" data-page="flow">End-to-End Flow</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#flow-diagram" class="nav-link" data-page="flow-diagram">Flow Diagram</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#rule-model" class="nav-link" data-page="rule-model">Rule Model & Actions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#components" class="nav-link" data-page="components">Component Responsibilities</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#error-handling" class="nav-link" data-page="error-handling">Error Handling</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Page 1: Executive Summary -->
+            <div class="page active" id="executive-summary">
+                <div class="page-header">
+                    <h1>Executive Summary</h1>
+                    <p class="subtitle">Overview of DFRuleProcessorService</p>
+                </div>
+                <div class="content-section">
+                    <p>This document describes the <strong>DFRuleProcessorService</strong>: an Azure Function that receives a pointer to transaction payloads (via Event Grid), evaluates a set of business rules against those payloads using a rules engine, and produces transformed output (modified and/or cloned transactions) which it persists to blob storage and signals to downstream consumers via a queue.</p>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Key Concept:</strong> The service is deliberately hybrid — a declarative rules engine is used for simple transformations, while a C# escape hatch (custom actions) handles complex operations.</p>
+                    </div>
+
+                    <h3>What This Service Does</h3>
+                    <ul>
+                        <li>Receives transaction payload notifications via Azure Event Grid</li>
+                        <li>Applies tenant-specific business rules using a flexible rules engine</li>
+                        <li>Transforms transactions through updates, cloning, and custom actions</li>
+                        <li>Persists results to blob storage as immutable output artifacts</li>
+                        <li>Notifies downstream systems via queue messages</li>
+                    </ul>
+
+                    <h3>Hybrid Approach</h3>
+                    <p>The service combines two powerful paradigms:</p>
+                    <ul>
+                        <li><strong>Declarative Rules:</strong> JSON-based workflow definitions for straightforward transformations</li>
+                        <li><strong>Procedural Actions:</strong> C# custom action handlers for complex business logic that requires procedural control</li>
+                    </ul>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" disabled>Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('goals-scope')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 2: Goals and Scope -->
+            <div class="page" id="goals-scope">
+                <div class="page-header">
+                    <h1>Goals and Scope</h1>
+                    <p class="subtitle">Primary objectives and document boundaries</p>
+                </div>
+                <div class="content-section">
+                    <h2>Primary Goals</h2>
+                    <ul>
+                        <li><strong>Apply tenant-specific business rules</strong> to incoming transaction payloads with flexibility and precision</li>
+                        <li><strong>Produce immutable output artifacts</strong> (new blobs) that represent the post-enrichment result, ensuring data integrity and traceability</li>
+                        <li><strong>Support multiple transformation patterns:</strong>
+                            <ul>
+                                <li>Direct property updates on existing transactions</li>
+                                <li>Cloning transactions with simple property changes</li>
+                                <li>Cloning with derived values computed at runtime</li>
+                                <li>Full custom procedural actions for complex scenarios</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h2>Scope of This Document</h2>
+                    <div class="highlight-box">
+                        <p>This documentation provides comprehensive coverage of:</p>
+                    </div>
+                    <ul>
+                        <li><strong>Internal Flow:</strong> Detailed description of how data moves through the system from trigger to completion</li>
+                        <li><strong>Module Responsibilities:</strong> Clear definition of each code module's role and purpose</li>
+                        <li><strong>Action Types:</strong> Documentation of how ProcessTask handles different rule outputs and transformation patterns</li>
+                        <li><strong>Testing Environment:</strong> Local development setup considerations and configuration differences</li>
+                    </ul>
+
+                    <h2>What This Document Does NOT Cover</h2>
+                    <ul>
+                        <li>End-user operational procedures or user guides</li>
+                        <li>Deployment pipelines and infrastructure provisioning</li>
+                        <li>Detailed API contracts for external consumers</li>
+                        <li>Performance tuning and optimization strategies</li>
+                    </ul>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('executive-summary')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('architecture')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 3: High-Level Architecture -->
+            <div class="page" id="architecture">
+                <div class="page-header">
+                    <h1>High-Level Architecture</h1>
+                    <p class="subtitle">System components and their interactions</p>
+                </div>
+                <div class="content-section">
+                    <h2>Core Components</h2>
+                    <div class="action-cards">
+                        <div class="action-card">
+                            <h4>Trigger</h4>
+                            <p><strong>Azure Event Grid</strong> - Fires on new blob creation events, initiating the processing pipeline</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Function Entry</h4>
+                            <p><strong>DFRuleProcessorService</strong> (AtlasFunction.cs) - Thin entry point that validates events and delegates processing</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Orchestrator</h4>
+                            <p><strong>ProcessTask.ExecuteAsync()</strong> - Main coordinator that loads payloads, rules, and manages execution flow</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Rules Engine</h4>
+                            <p>Evaluates DF_Rules.json workflows against TransactionRoot objects using boolean expressions</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Action Handlers</h4>
+                            <p><strong>RuleHelpers</strong> and <strong>CustomActionHandler</strong> - Execute transformations based on rule outcomes</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Persistence Layer</h4>
+                            <p>Writes output blobs and enqueues messages for downstream processing</p>
+                        </div>
+                    </div>
+
+                    <h2>Simplified Architecture Flow</h2>
+                    <div class="architecture-box">
+                        <pre>
+EventGrid ──→ AtlasFunction ──→ ProcessTask.ExecuteAsync ──→ RulesEngine.ExecuteAllRulesAsync
+                                                            │
+                                                            ├──→ Action Handling
+                                                            │    • Update
+                                                            │    • Clone
+                                                            │    • CloneWithDerived
+                                                            │    • CloneWithMultipleDerived
+                                                            │    • CustomAction
+                                                            │
+                                                            ├──→ Upload Output Blob
+                                                            │
+                                                            └──→ Enqueue Message</pre>
+                    </div>
+
+                    <h2>Rule Example Pattern</h2>
+                    <div class="architecture-box">
+                        <pre>
+{
+  "WorkflowName": "LargeTransactionSplitter",
+  "Expression": "transaction.Amount > 10000",
+  "Actions": {
+    "OnSuccess": {
+      "Expression": "RuleHelpers.CloneWithDerived(transaction, derivedParams)"
+    }
+  }
+}</pre>
+                    </div>
+
+                    <h2>Key Design Principles</h2>
+                    <ul>
+                        <li><strong>Separation of Concerns:</strong> Clear boundaries between event handling, orchestration, rule evaluation, and persistence</li>
+                        <li><strong>Declarative First:</strong> Simple transformations use JSON rules; complex logic falls back to C# methods</li>
+                        <li><strong>Immutability:</strong> Original payloads remain unchanged; all transformations produce new output artifacts</li>
+                        <li><strong>Extensibility:</strong> Custom actions can be added without modifying core engine logic</li>
+                    </ul>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('goals-scope')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('flow')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 4: End-to-End Flow -->
+            <div class="page" id="flow">
+                <div class="page-header">
+                    <h1>End-to-End Flow</h1>
+                    <p class="subtitle">Step-by-step processing pipeline</p>
+                </div>
+                <div class="content-section">
+                    <h2>Processing Steps</h2>
+                    
+                    <div class="component-item">
+                        <strong>Step 1: Event Trigger</strong>
+                        <p>Event Grid fires with blob URL when a new transaction payload is uploaded to storage. The event contains metadata including the blob location and trigger timestamp.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 2: Function Invocation</strong>
+                        <p>AtlasFunction validates the incoming event structure and extracts the blob URL. It then calls ProcessTask.ExecuteAsync(blobUrl) to begin processing.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 3: Payload Loading</strong>
+                        <p>ProcessTask reads the blob content from Azure Storage and deserializes the JSON into a TransactionRoot object that will be processed by the rules engine.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 4: Rule Set Determination</strong>
+                        <p>ProcessTask determines the applicable rule set names from RuleSetNamesConfig, which allows for dynamic loading of tenant-specific or environment-specific rules at runtime.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 5: Rules Engine Initialization</strong>
+                        <p>A RulesEngine instance is created with ReSettings.CustomTypes populated with RuleHelpers and all static classes from CustomActionHandler.cs, making these methods available to rule expressions.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 6: Rule Execution</strong>
+                        <p>The engine executes ProcessRulesAsyncDF with the transaction payload as input. Each rule's Expression is evaluated, and if true, the OnSuccess expression is executed.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 7: Result Processing</strong>
+                        <p>For each rule that evaluates to true, the OnSuccess expression produces either:</p>
+                        <ul>
+                            <li><strong>RuleActionResult object:</strong> Contains action type and property updates</li>
+                            <li><strong>String identifier:</strong> Represents a CustomAction to be invoked</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 8: Action Handling - RuleActionResult</strong>
+                        <p>ProcessTask inspects RuleActionResult objects and applies the appropriate transformation:</p>
+                        <ul>
+                            <li><strong>Update:</strong> PropertyUpdater.ApplyValue modifies the existing transaction in place</li>
+                            <li><strong>Clone:</strong> Original transaction is cloned, property updates are applied to the clone, and the clone is added to the output list</li>
+                            <li><strong>CloneWithDerived / CloneWithMultipleDerived:</strong> ProcessTask invokes runtime-provided helper logic to compute derived values, then applies them to cloned transactions</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 9: Custom Action Execution</strong>
+                        <p>For CustomAction string results, ProcessTask maps the identifier to a static method in CustomActionHandler using conditional logic or switch statements. The method executes and may update the existing transaction and/or return zero or more cloned transactions.</p>
+                    </div>
+
+                    <div class="component-item">
+                        <strong>Step 10: Finalization</strong>
+                        <p>After all rules are processed, ProcessTask serializes the final transaction set (original plus any clones or modifications), uploads it to a new output blob in Azure Storage, and enqueues a pointer message for downstream consumers.</p>
+                    </div>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('architecture')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('flow-diagram')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 5: Flow Diagram -->
+            <div class="page" id="flow-diagram">
+                <div class="page-header">
+                    <h1>End-to-End Flow Diagram</h1>
+                    <p class="subtitle">Visual representation of the processing pipeline</p>
+                </div>
+                <div class="content-section">
+                    <h2>Complete Processing Flow</h2>
+                    <p>This diagram illustrates the complete data flow from event trigger through rule processing to output persistence.</p>
+                    
+                    <div class="flow-diagram-enhanced">
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">Event Grid (New Blob)</div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">Azure Function</div>
+                            <div class="flow-node-body">DFRuleProcessorService<br>(AtlasFunction.cs)</div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">ProcessTask.ExecuteAsync</div>
+                            <div class="flow-node-body">(Tasks/ProcessTask.cs)<br><br>1. Fetch Transaction Data from Blob Storage<br>2. Read RuleSetNameConfig</div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">Rules Engine</div>
+                            <div class="flow-node-body">ProcessRulesAsyncDF<br><br>For each rule:<br>- Evaluate Expression<br>- If true, execute OnSuccess</div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">RuleHelpers Class</div>
+                            <div class="flow-node-body">(Injected into Engine)<br><br>OnSuccess calls one of these:<br>- Update(...)<br>- Clone(...)<br>- CloneWithDerived(...)<br>- CloneWithMultipleDerived(...)<br>- CustomAction(...)</div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node flow-node-large" data-animation="fade-in-down">
+                            <div class="flow-node-header">ProcessTask.cs - Action Handling Logic</div>
+                            <div class="flow-node-body" style="text-align: left; padding-left: 1rem;">
+                                <strong>If RuleActionResult (Update/Clone):</strong>
+                                <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                                    <li>Use PropertyUpdater.ApplyValue (Reflection) to set properties.</li>
+                                    <li>For 'Derived' clones, calculate new values first.</li>
+                                </ul>
+                                <strong>If string (CustomAction):</strong>
+                                <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                                    <li>Use if/else or switch to map action name to a static method.</li>
+                                    <li>Example: "ACTION:AFO_ASIA_ACCRUAL" -&gt; AFOAsiaMethods.ProcessAccrual()</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">Finalization</div>
+                            <div class="flow-node-body">(ProcessTask.cs)<br><br>1. Serialize new/modified transactions to JSON<br>2. Upload new JSON to Blob Storage<br>3. Enqueue message for downstream services</div>
+                        </div>
+                        <div class="flow-arrow" data-animation="draw-line"></div>
+                        <div class="flow-node" data-animation="fade-in-down">
+                            <div class="flow-node-header">Downstream Processes</div>
+                        </div>
+                    </div>
+
+                    <h2>Key Flow Characteristics</h2>
+                    <ul>
+                        <li><strong>Event-Driven:</strong> Processing begins only when Event Grid fires on new blob creation</li>
+                        <li><strong>Rule-Based Branching:</strong> Each transaction may trigger multiple rules, creating multiple transformation paths</li>
+                        <li><strong>Reflection-Based Property Updates:</strong> PropertyUpdater.ApplyValue uses reflection to dynamically set properties based on rule definitions</li>
+                        <li><strong>Dual Action System:</strong> RuleActionResult objects for declarative actions and string identifiers for procedural custom actions</li>
+                        <li><strong>Immutable Output:</strong> Original blob remains unchanged; all results written to new blob</li>
+                    </ul>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('flow')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('rule-model')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 6: Rule Model and Action Types -->
+            <div class="page" id="rule-model">
+                <div class="page-header">
+                    <h1>Rule Model & Action Types</h1>
+                    <p class="subtitle">Structure of rules and supported transformations</p>
+                </div>
+                <div class="content-section">
+                    <h2>Rule Structure</h2>
+                    <p>Rules are authored as Workflow objects serialized to JSON. Each workflow defines conditions and actions to be applied to transaction payloads.</p>
+                    
+                    <h3>Key Workflow Fields</h3>
+                    <div class="component-list">
+                        <div class="component-item">
+                            <strong>WorkflowName</strong>
+                            <p>Unique identifier for the rule, used in logging and debugging to trace which rules were evaluated and executed.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong>Expression</strong>
+                            <p>C# boolean expression evaluated against the transaction object. If this expression returns true, the rule's actions are executed. Example: <code>transaction.Amount > 1000 && transaction.Type == "Purchase"</code></p>
+                        </div>
+                        <div class="component-item">
+                            <strong>Actions.OnSuccess.Expression</strong>
+                            <p>Expression executed when the rule condition is satisfied. This typically invokes RuleHelpers methods that return action descriptors or custom action identifiers.</p>
+                        </div>
+                    </div>O
+                    AIzaSyAChSgBwRbBPF3GgIJbLMU6vLkm9YOOdOM
+                    <h2>Supported Action Types</h2>
+                    <p>ProcessTask recognizes and handles the following action types returned by rule evaluations:</p>
+
+                    <div class="action-cards">
+                        <div class="action-card">
+                            <h4>Update</h4>
+                            <p><strong>Purpose:</strong> Modify properties on the existing transaction without creating copies.</p>
+                            <p><strong>Use Case:</strong> Simple field corrections, status updates, or enrichment of existing records.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Clone</h4>
+                            <p><strong>Purpose:</strong> Clone the transaction and apply simple property updates to the clone.</p>
+                            <p><strong>Use Case:</strong> Creating duplicate transactions with minor variations, such as splitting a transaction across multiple accounts.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>CloneWithDerived</h4>
+                            <p><strong>Purpose:</strong> Clone the transaction and apply derived values obtained via helper logic along with key-value pairs.</p>
+                            <p><strong>Use Case:</strong> Creating transactions where values must be calculated from external data sources or complex formulas.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>CloneWithMultipleDerived</h4>
+                            <p><strong>Purpose:</strong> Create multiple cloned transactions, each with different derived values and key-value pairs.</p>
+                            <p><strong>Use Case:</strong> Splitting a single transaction into multiple related transactions with computed allocations.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>CustomAction</h4>
+                            <p><strong>Purpose:</strong> Invoke procedural C# methods for complex logic that requires full programmatic control.</p>
+                            <p><strong>Use Case:</strong> Complex business logic such as updating an existing transaction and then cloning the updated version, or multi-step transformations.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('flow-diagram')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('components')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 7: Component Responsibilities -->
+            <div class="page" id="components">
+                <div class="page-header">
+                    <h1>Component Responsibilities</h1>
+                    <p class="subtitle">Key files and their roles in the system</p>
+                </div>
+                <div class="content-section">
+                    <h2>Core Components</h2>
+                    
+                    <div class="component-list">
+                        <div class="component-item">
+                            <strong>AtlasFunction.cs</strong>
+                            <p><strong>Responsibility:</strong> Azure Event Grid trigger and initial validation</p>
+                            <p><strong>Key Functions:</strong></p>
+                            <ul>
+                                <li>Receives Event Grid notifications for new blob uploads</li>
+                                <li>Validates event schema and extracts blob URL</li>
+                                <li>Serves as the thin entry point that delegates to ProcessTask</li>
+                                <li>Handles initial error conditions and logging</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>Tasks/ProcessTask.cs</strong>
+                            <p><strong>Responsibility:</strong> Main orchestrator for the entire processing pipeline</p>
+                            <p><strong>Key Functions:</strong></p>
+                            <ul>
+                                <li>Loads transaction payloads from blob storage</li>
+                                <li>Configures and initializes the rules engine with custom types</li>
+                                <li>Executes rules and processes their outputs</li>
+                                <li>Handles RuleHelpers outputs and invokes runtime-provided helpers</li>
+                                <li>Manages action execution for all action types</li>
+                                <li>Finalizes output by serializing results, uploading to blob storage, and enqueueing messages</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>Configuration/RuleSetNameConfig.cs</strong>
+                            <p><strong>Responsibility:</strong> Dynamic rule set configuration management</p>
+                            <p><strong>Key Functions:</strong></p>
+                            <ul>
+                                <li>Holds the names of rule sets (e.g., for validation rules, business rules)</li>
+                                <li>Populated from the service's configuration (environment variables, app settings)</li>
+                                <li>Enables loading different rule sets for different tenants or environments at runtime</li>
+                                <li>Supports A/B testing and gradual rule rollouts</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>CustomMethods/CustomActionHandlers.cs</strong>
+                            <p><strong>Responsibility:</strong> Custom action method declarations and implementations</p>
+                            <p><strong>Key Functions:</strong></p>
+                            <ul>
+                                <li>Declares custom action method signatures exposed to the rules engine</li>
+                                <li>Contains static methods invoked by CustomAction identifiers</li>
+                                <li>Implements complex business logic that cannot be expressed declaratively</li>
+                                <li>Examples: AFOAsiaMethods.ProcessAccrual(), MultiStepTransformations, etc.</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>Tasks/DataBaseProcessor.cs</strong>
+                            <p><strong>Responsibility:</strong> Data access abstraction layer</p>
+                            <p><strong>Key Functions:</strong></p>
+                            <ul>
+                                <li>Provides abstraction for database operations during derived value computation</li>
+                                <li>Executes SQL queries and returns results to computation logic</li>
+                                <li>Handles connection management and query parameterization</li>
+                                <li>Supports both synchronous and asynchronous data retrieval</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>Tasks/Sql/</strong>
+                            <p><strong>Responsibility:</strong> Embedded SQL resource files</p>
+                            <p><strong>Key Functions:</strong></p>
+                            <ul>
+                                <li>Contains SQL query files referenced by derived value computation logic</li>
+                                <li>Loaded as embedded resources at runtime</li>
+                                <li>Supports version control and review of SQL logic</li>
+                                <li>Enables separation of data access queries from C# code</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h2>Component Interaction Pattern</h2>
+                    <div class="highlight-box">
+                        <p><strong>Layered Architecture:</strong> The system follows a clear layered pattern where AtlasFunction handles infrastructure concerns, ProcessTask orchestrates business logic, CustomActionHandlers implement domain-specific operations, and DataBaseProcessor manages data access.</p>
+                    </div>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('rule-model')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('error-handling')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 8: Error Handling and Resiliency -->
+            <div class="page" id="error-handling">
+                <div class="page-header">
+                    <h1>Error Handling & Resiliency</h1>
+                    <p class="subtitle">Strategies for robust operation</p>
+                </div>
+                <div class="content-section">
+                    <h2>Error Handling Strategy</h2>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Fail-Fast at Entry, Graceful Degradation Within:</strong> The system validates inputs strictly at the entry point but allows graceful handling of individual rule failures to prevent complete pipeline failures.</p>
+                    </div>
+
+                    <h3>Exception Handling Patterns</h3>
+                    <div class="component-list">
+                        <div class="component-item">
+                            <strong>Entry Point Protection</strong>
+                            <p>The ExecuteAsync entry point in ProcessTask is wrapped in comprehensive try/catch blocks. Any unhandled exceptions are:</p>
+                            <ul>
+                                <li>Logged with full context including blob URL, timestamp, and exception details</li>
+                                <li>Rethrown to allow Azure Functions runtime retry behavior to activate</li>
+                                <li>Tracked in telemetry for monitoring and alerting</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>Graceful Degradation</strong>
+                            <p>Optional data lookups and individual rule evaluations are designed to fail gracefully:</p>
+                            <ul>
+                                <li>Failed data lookups return null or default values rather than throwing exceptions</li>
+                                <li>Individual rule failures are logged but do not halt processing of subsequent rules</li>
+                                <li>Missing derived values result in null properties rather than pipeline failure</li>
+                                <li>Isolated data issues do not cause complete function failure</li>
+                            </ul>
+                        </div>
+
+                        <div class="component-item">
+                            <strong>Validation Gates</strong>
+                            <p>Critical validation occurs at key points in the pipeline:</p>
+                            <ul>
+                                <li><strong>Event Validation:</strong> Ensures Event Grid payload structure is correct</li>
+                                <li><strong>Blob Existence:</strong> Verifies blob exists before attempting download</li>
+                                <li><strong>JSON Deserialization:</strong> Validates payload structure matches TransactionRoot schema</li>
+                                <li><strong>Rule Set Loading:</strong> Ensures required rule sets are available</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h2>Resiliency Mechanisms</h2>
+
+                    <div class="action-cards">
+                        <div class="action-card">
+                            <h4>Azure Functions Retry</h4>
+                            <p>Leverages built-in Azure Functions retry policies for transient failures. Exceptions rethrown from ExecuteAsync trigger automatic retries with exponential backoff.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Idempotency</h4>
+                            <p>Processing is designed to be idempotent - reprocessing the same blob produces identical results, allowing safe retries without data corruption.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Timeout Management</h4>
+                            <p>Long-running operations include timeout configurations to prevent indefinite hangs. Database queries use command timeouts, and blob operations have retry limits.</p>
+                        </div>
+                        <div class="action-card">
+                            <h4>Dead Letter Queue</h4>
+                            <p>Messages that fail after all retry attempts are routed to a dead letter queue for manual investigation and reprocessing.</p>
+                        </div>
+                    </div>
+
+                    <h2>Logging and Observability</h2>
+                    <ul>
+                        <li><strong>Structured Logging:</strong> All log entries include correlation IDs, blob URLs, and relevant context</li>
+                        <li><strong>Rule Execution Tracking:</strong> Each rule evaluation and action execution is logged with outcomes</li>
+                        <li><strong>Performance Metrics:</strong> Processing duration, rule evaluation times, and blob operation latencies are tracked</li>
+                        <li><strong>Error Categorization:</strong> Errors are categorized (transient, configuration, data quality) for appropriate handling</li>
+                    </ul>
+
+                    <h2>Best Practices</h2>
+                    <div class="highlight-box">
+                        <ul>
+                            <li>Always validate external data before processing</li>
+                            <li>Use null-conditional operators and null-coalescing for safe property access</li>
+                            <li>Log errors with sufficient context for troubleshooting</li>
+                            <li>Design custom actions with exception handling built-in</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('components')">Previous</button>
+                    <button class="nav-button next" disabled>Next</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script>
+        // PDF Generation
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const downloadButton = document.getElementById('download-pdf-btn');
+            if(downloadButton) {
+                downloadButton.addEventListener('click', downloadAsPDF);
+            }
+
+            const animatedItems = document.querySelectorAll('[data-animation]');
+            if (animatedItems.length) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const items = entry.target.querySelectorAll('[data-animation]');
+                            items.forEach((item, index) => {
+                                item.style.transitionDelay = `${index * 150}ms`;
+                                item.classList.add('is-visible');
+                            });
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.2 });
+
+                const flowContainer = document.querySelector('.flow-diagram-enhanced');
+                if (flowContainer) {
+                    observer.observe(flowContainer);
+                }
+            }
+
+            const firstLink = document.querySelector('.nav-link');
+            if(firstLink) {
+                firstLink.classList.add('active');
+            }
+        });
+
+
+        // --- Global Functions ---
+        function navigatePage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+                
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                const activeLink = document.querySelector(`[data-page="${pageId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                navigatePage(pageId);
+            });
+        });
+    </script>
+</body>
+</html>
