@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDA System - Elimination Flow Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            width: 250px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .sidebar h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 18px;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .nav-item {
+            color: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            font-weight: bold;
+        }
+
+        .content {
+            margin-left: 290px;
+            padding: 40px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 28px;
+            border-bottom: 3px solid #f5576c;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #667eea;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h4 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .flag-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid #f5576c;
+        }
+
+        .flag-box strong {
+            color: #f5576c;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .flow-diagram {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .flow-arrow {
+            color: #f5576c;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .flow-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px auto;
+            display: inline-block;
+            min-width: 300px;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .highlight {
+            background: #fff9c4;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .yes-icon {
+            color: #4caf50;
+            font-size: 20px;
+        }
+
+        .no-icon {
+            color: #f44336;
+            font-size: 20px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .reversal-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #e17055;
+        }
+
+        .reversal-box h4 {
+            color: #d63031;
+            margin-bottom: 15px;
+        }
+
+        .reversal-item {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .reversal-item strong {
+            color: #2d3436;
+        }
+
+        .reversal-badge {
+            background: #d63031;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .update-badge {
+            background: #0984e3;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+.highlight-box {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #2196F3;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            margin: 20px auto;
+            display: block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #4caf50 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                left: 0;
+                margin-bottom: 20px;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h3>📑 Navigation</h3>
+            <div class="nav-item active" onclick="showSection('overview')">Overview</div>
+            <div class="nav-item" onclick="showSection('flags')">Key Flags</div>
+            <div class="nav-item" onclick="showSection('services')">Microservices</div>
+            <div class="nav-item" onclick="showSection('flow')">High-Level Flow</div>
+            <div class="nav-item" onclick="showSection('criteria')">Elimination Criteria</div>
+            <div class="nav-item" onclick="showSection('persistence')">Persistence Process</div>
+            <div class="nav-item" onclick="showSection('logic')">Elimination Logic</div>
+            <div class="nav-item" onclick="showSection('case1')">Case 1: JE Exists</div>
+            <div class="nav-item" onclick="showSection('case2')">Case 2: No JE</div>
+            <div class="nav-item" onclick="showSection('reversalfields')">🔥 Fields Reversed</div>
+            <div class="nav-item" onclick="showSection('linking')">Linking Behavior</div>
+            <div class="nav-item" onclick="showSection('matrix')">Summary Matrix</div>
+            <div class="nav-item" onclick="showSection('responsibilities')">Service Responsibilities</div>
+            <div class="nav-item" onclick="showSection('diagram')">Final Diagram</div>
+        </div>
+
+        <div class="content">
+
+            <!-- Overview -->
+<div class="section active" id="overview">
+                <div class="header">
+                    <h1>🎯 FINAL ARCHITECTURE DOCUMENT</h1>
+                    <p>ELIMINATION FLOW (EDA)</p>
+                    <button class="download-btn" onclick="downloadDocument()">
+                        📥 Download Document
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h4>📋 Overview</h4>
+                    <p>The elimination process ensures that <strong>inter-entity transactions are canceled out during consolidation</strong>.</p>
+                    <p style="margin-top: 15px;">In the new EDA microservices architecture, the legacy stored procedure logic has been replaced by coordinated actions between services.</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>📌 This document defines:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>The complete elimination flow</li>
+                        <li>Service responsibilities</li>
+                        <li>Flag behavior</li>
+                        <li>Data transformations</li>
+                        <li>Case handling for JE vs No-JE</li>
+                        <li>Persistence rules for dbo & adj schemas</li>
+                        <li><strong>Complete list of fields reversed during elimination</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Flags -->
+            <div class="section" id="flags">
+                <h2>🚩 Key Flags</h2>
+
+                <div class="flag-box">
+                    <strong>1. isElimination</strong>
+                    <p style="margin-top: 10px; color: #555;">Set by: <span class="highlight">EnrichmentService</span></p>
+                    <p style="margin-top: 10px;"><strong>Meaning:</strong> This transaction must go through the elimination process.</p>
+                    <p style="margin-top: 5px;">Set when internal counterparty conditions are met.</p>
+                    <div class="code-block">isElimination = true</div>
+                </div>
+
+                <div class="flag-box">
+                    <strong>2. isEliminationDone</strong>
+                    <p style="margin-top: 10px; color: #555;">Set by: <span class="highlight">EliminationService</span></p>
+                    <p style="margin-top: 10px;"><strong>Meaning:</strong> Elimination processing is completed; adj records created.</p>
+                    <p style="margin-top: 5px;">Set only after elimination JSON is built successfully.</p>
+                    <div class="code-block">isEliminationDone = true</div>
+                </div>
+            </div>
+
+            <!-- Services -->
+            <div class="section" id="services">
+                <h2>⚙️ Microservices Involved</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Responsibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ACEEntryPoint</strong></td>
+                            <td>Receives Datafeeds / ASAP inputs</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EnrichmentService</strong></td>
+                            <td>Builds AGT JSON, sets isElimination = true</td>
+                        </tr>
+                        <tr>
+                            <td><strong>JEEnrichmentService</strong></td>
+                            <td>Adds JE legs (if GL required)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EvaluateService</strong></td>
+                            <td>Applies business rules, decides JE required/not required</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PersistService</strong></td>
+                            <td>Inserts original records (dbo) and adj records (adj)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EliminationService</strong> (NEW)</td>
+                            <td>Builds the elimination JSON (reversal logic)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- High-Level Flow -->
+            <div class="section" id="flow">
+                <h2>🔄 High-Level Flow</h2>
+
+                <div class="flow-diagram">
+                    <div class="flow-box">Datafeed</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">ACEEntryPoint</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">EnrichmentService<br>(isElimination = true)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">JEEnrichmentService<br>(if JE required)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">EvaluateService</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">PersistService<br>(insert dbo records)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">EliminationService<br>(build reversal JSON)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">PersistService<br>(insert adj schema records)</div>
+                </div>
+            </div>
+
+            <!-- Criteria -->
+            <div class="section" id="criteria">
+                <h2>✅ Elimination Decision Criteria</h2>
+
+                <div class="card">
+                    <h4>Elimination triggers only when:</h4>
+                    <div class="code-block">isElimination = true</div>
+                    <p style="margin-top: 20px;">This is set by <strong>EnrichmentService</strong> based on:</p>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Internal counterparty logic</li>
+                        <li>Entity relationships</li>
+                        <li>Accounting rules</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <h4>📌 How is isElimination Determined?</h4>
+                    <p style="margin-top: 10px;"><strong>Logic:</strong></p>
+                    <div class="code-block">
+IF counterparty_entity.edd_row_id = 1 THEN
+    isElimination = "Yes"
+ELSE
+    isElimination = "No"
+                    </div>
+                    <p style="margin-top: 15px;"><strong>Meaning:</strong> If the counterparty entity has <code>edd_row_id = 1</code>, it is an <strong>INTERNAL entity</strong>.</p>
+                    <p style="margin-top: 10px;">This ensures elimination runs only for <strong>internal Account Owner / internal counterparty</strong> scenarios.</p>
+                </div>
+            </div>
+
+            <!-- Persistence -->
+            <div class="section" id="persistence">
+                <h2>💾 Persistence – Two-Step Process</h2>
+
+                <div class="card">
+                    <h4>Step 1 — Insert ORIGINAL transaction into dbo</h4>
+                    <p>Handled by <strong>PersistService</strong>.</p>
+                    <ul style="margin-top: 15px; margin-left: 20px;">
+                        <li><strong>dbo.agt</strong> (always)</li>
+                        <li><strong>gl.gjs</strong>, <strong>gl.ged</strong> (only if JE exists)</li>
+                    </ul>
+                    <p style="margin-top: 15px;"><strong>Captured:</strong></p>
+                    <div class="code-block">origId = dbo.agt.agt_row_id</div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>Step 2 — Insert ADJ reversal transaction into adj</h4>
+                    <p>Handled after <strong>EliminationService</strong> provides adjusted JSON.</p>
+                </div>
+            </div>
+
+            <!-- Logic -->
+            <div class="section" id="logic">
+                <h2>🧠 Elimination Logic</h2>
+
+                <div class="card">
+                    <h4>Core Principle</h4>
+                    <p>The EliminationService reads the original transaction from dbo schema and creates a <strong>reversal version</strong> that will be saved to adj schema.</p>
+                    <p style="margin-top: 15px;">The reversal logic depends on whether a Journal Entry (JE) exists or not.</p>
+                </div>
+
+                <div class="info-box">
+                    <p style="font-size: 16px;"><strong>Key Understanding:</strong></p>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li><strong>Base amounts ALWAYS get reversed</strong> (TransactionAmount, Local.TransactionAmount)</li>
+                        <li><strong>JE amounts get reversed ONLY if JE exists</strong></li>
+                        <li><strong>Descriptive fields get updated to "Eliminations"</strong></li>
+                        <li><strong>ID linking fields get updated for audit trail</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Case 1 -->
+            <div class="section" id="case1">
+                <h2>📘 CASE 1 — JE EXISTS (GL Required)</h2>
+
+                <div class="card">
+                    <h4>Original inserts (dbo schema):</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>dbo.agt</li>
+                        <li>gl.gjs</li>
+                        <li>gl.ged</li>
+                    </ul>
+                </div>
+
+                <h3>What Gets Reversed:</h3>
+                <div class="reversal-box">
+                    <h4>✅ Both AGT Base Amounts AND JE Amounts</h4>
+                    <div class="reversal-item">
+                        <strong>Base.TransactionAmount</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>Local.TransactionAmount</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>JE debit_amt</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>JE credit_amt</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>PersistService inserts (adj schema):</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>adj.agt (with reversed base amounts)</li>
+                        <li>adj.gjs (with reversed JE amounts)</li>
+                        <li>adj.ged (with reversed JE amounts)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Case 2 -->
+            <div class="section" id="case2">
+                <h2>📗 CASE 2 — NO JE EXISTS (GL NOT Required)</h2>
+
+                <div class="card">
+                    <h4>Original inserts (dbo schema):</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>dbo.agt ONLY</li>
+                    </ul>
+                </div>
+
+                <h3>What Gets Reversed:</h3>
+                <div class="reversal-box">
+                    <h4>✅ Only AGT Base Amounts (No JE to reverse)</h4>
+                    <div class="reversal-item">
+                        <strong>Base.TransactionAmount</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>Local.TransactionAmount</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; color: #636e72; font-style: italic;">
+                        No JE exists, so no JE amounts to reverse
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>PersistService inserts (adj schema):</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>adj.agt (with reversed base amounts) ONLY</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Reversal Fields -->
+            <div class="section" id="reversalfields">
+                <h2>🔥 Complete List of Fields Reversed/Updated</h2>
+
+                <div class="info-box">
+                    <p style="font-size: 18px; font-weight: bold; color: #d63031;">This is what EliminationService actually does before moving data to ADJ schema:</p>
+                </div>
+
+                <div class="reversal-box">
+                    <h4>1️⃣ Base Transaction Amounts (ALWAYS REVERSED)</h4>
+                    <div class="reversal-item">
+                        <strong>Base.TransactionAmount</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>Local.TransactionAmount</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                </div>
+
+                <div class="reversal-box">
+                    <h4>2️⃣ Journal Entry Amounts (REVERSED ONLY IF JE EXISTS)</h4>
+                    <div class="reversal-item">
+                        <strong>JE debit_amt</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>JE credit_amt</strong>
+                        <span class="reversal-badge">× -1</span>
+                    </div>
+                    <p style="margin-top: 10px; color: #636e72; font-style: italic; text-align: center;">
+                        ⚠️ Only applies when JE exists
+                    </p>
+                </div>
+
+
+
+                <div class="reversal-box">
+                    <h4>4️⃣ ID Linking Fields (UPDATED FOR AUDIT TRAIL)</h4>
+                    <div class="reversal-item">
+                        <strong>Original_agt_row_id</strong>
+                        <span class="update-badge">Set to current agt_row_id</span>
+                    </div>
+                    <div class="reversal-item">
+                        <strong>Agt_row_id</strong>
+                        <span class="update-badge">Set to null</span>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 30px;">
+                    <h4>📊 Summary</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Action</th>
+                                <th>When</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Base.TransactionAmount</td>
+                                <td>Reversed (× -1)</td>
+                                <td>Always</td>
+                            </tr>
+                            <tr>
+                                <td>Local.TransactionAmount</td>
+                                <td>Reversed (× -1)</td>
+                                <td>Always</td>
+                            </tr>
+                            <tr>
+                                <td>JE debit_amt</td>
+                                <td>Reversed (× -1)</td>
+                                <td>Only if JE exists</td>
+                            </tr>
+                            <tr>
+                                <td>JE credit_amt</td>
+                                <td>Reversed (× -1)</td>
+                                <td>Only if JE exists</td>
+                            </tr>
+                            <tr>
+                                <td>Ett_eton_trans_typ_desc</td>
+                                <td>Set to "Eliminations"</td>
+                                <td>Always</td>
+                            </tr>
+                            <tr>
+                                <td>Gjet_gl_je_typ_desc</td>
+                                <td>Set to "Eliminations"</td>
+                                <td>Always</td>
+                            </tr>
+                            <tr>
+                                <td>Original_agt_row_id</td>
+                                <td>Set to current agt_row_id</td>
+                                <td>Always</td>
+                            </tr>
+                            <tr>
+                                <td>Agt_row_id</td>
+                                <td>Set to null</td>
+                                <td>Always</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Linking -->
+            <div class="section" id="linking">
+                <h2>🔗 Linking Behavior (ALWAYS APPLIES)</h2>
+
+                <div class="info-box">
+                    <p style="font-size: 16px;"><strong>Regardless of JE existence:</strong></p>
+                    <div class="code-block" style="margin-top: 15px;">
+original_agt_row_id = &lt;dbo agt id&gt;
+agt_row_id = null
+isEliminationDone = true
+                    </div>
+                    <p style="margin-top: 15px;">This creates the <strong>audit link</strong> between original AGT and adj AGT.</p>
+                </div>
+            </div>
+
+            <!-- Matrix -->
+            <div class="section" id="matrix">
+                <h2>📊 Summary Matrix (JE vs No JE)</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Reverse Base Amounts?</th>
+                            <th>Reverse JE Amounts?</th>
+                            <th>Adj Tables Used</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>JE exists</strong></td>
+                            <td><span class="yes-icon">✅</span> YES</td>
+                            <td><span class="yes-icon">✅</span> YES</td>
+                            <td>adj.agt + adj.gjs + adj.ged</td>
+                        </tr>
+                        <tr>
+                            <td><strong>No JE</strong></td>
+                            <td><span class="yes-icon">✅</span> YES</td>
+                            <td><span class="no-icon">❌</span> N/A</td>
+                            <td>adj.agt only</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h4>🎯 Key Takeaway</h4>
+                    <p style="font-size: 16px; margin-top: 10px;">
+                        <strong>Base transaction amounts (TransactionAmount, Local.TransactionAmount) are ALWAYS reversed</strong> regardless of whether JE exists or not.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <strong>JE amounts (debit_amt, credit_amt) are reversed ONLY when JE exists.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Responsibilities Section (FIXED) -->
+            <div class="section" id="responsibilities">
+                <h2>📦 Service Responsibilities</h2>
+
+                <!-- Inserted at the BOTTOM exactly as requested -->
+
+                <div class="card">
+                    <h4>EnrichmentService</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>Builds base AGT JSON</li>
+                        <li>Sets: isElimination = true (if counterparty is internal)</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>JEEnrichmentService</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>Adds JE legs if GL posting is required</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>EvaluateService</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>Determines JE Required / Not Required</li>
+                        <li>Validates internal entity logic</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>PersistService</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>Inserts original dbo records</li>
+                        <li>Inserts adj reversal records</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>EliminationService (CORE LOGIC)</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>Reads original dbo inserted data</li>
+                        <li>Builds reversal JSON by:</li>
+                        <ul style="margin-left: 20px;">
+                            <li>Reversing Base.TransactionAmount (× -1)</li>
+                            <li>Reversing Local.TransactionAmount (× -1)</li>
+                            <li>Reversing JE amounts (× -1) if JE exists</li>
+                            <li>Setting Ett_eton_trans_typ_desc = "Eliminations"</li>
+                            <li>Setting Gjet_gl_je_typ_desc = "Eliminations"</li>
+                            <li>Updating ID linking fields (Original_agt_row_id, Agt_row_id)</li>
+                        </ul>
+                        <li>Marks: isEliminationDone = true</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Diagram -->
+            <div class="section" id="diagram">
+                <h2>🎨 Final Diagram</h2>
+
+                <div class="flow-diagram">
+                    <div class="flow-box">Datafeed</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">ACEEntryPoint</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">EnrichmentService<br>(isElimination = true)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">JEEnrichmentService<br>(JE optional creation)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">EvaluateService</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">PersistService<br>(insert original AGT/JE to dbo)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);">
+                        EliminationService<br>
+                        <span style="font-size: 12px;">Reverse Base Amounts (×-1)<br>
+                        Reverse JE Amounts if exists (×-1)<br>
+                        Update descriptive & ID fields</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">PersistService<br>(insert reversed AGT/JE to adj)</div>
+                </div>
+
+                <div class="info-box" style="margin-top: 30px;">
+                    <p style="text-align: center; font-size: 18px;"><strong>✅ End of Document</strong></p>
+                    <p style="text-align: center; margin-top: 10px;">All elimination logic, field reversals, and service responsibilities documented.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    function showSection(sectionId) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.classList.remove('active');
+        });
+
+        document.getElementById(sectionId).classList.add('active');
+        event.target.classList.add('active');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function downloadDocument() {
+        // Get the entire HTML content
+        const htmlContent = document.documentElement.outerHTML;
+        
+        // Create a blob with the HTML content
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        
+        // Create a download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'EliminationService_Documentation.html';
+        
+        // Trigger the download
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>
