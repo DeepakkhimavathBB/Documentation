@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OffsetService - System Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --bg-main: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid var(--border);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-header h2 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-left-color: var(--accent);
+            padding-left: 2rem;
+        }
+
+        .nav-link.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1200px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .content-section {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-section h2 {
+            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-section h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .content-section p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .content-section ul, .content-section ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-section li {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .content-section li::marker {
+            color: var(--accent);
+        }
+        
+        .architecture-box {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--secondary);
+            margin: 1.5rem 0;
+        }
+
+        .architecture-box pre {
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .component-list {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .component-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .component-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .component-item strong {
+            color: var(--accent);
+            font-size: 1.05rem;
+        }
+
+        .page-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nav-button.prev::before {
+            content: '←';
+            font-size: 1.2rem;
+        }
+
+        .nav-button.next::after {
+            content: '→';
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Documentation</h2>
+                <p>OffsetService</p>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#executive-summary" class="nav-link" data-page="executive-summary">Executive Summary</a></li>
+                    <li class="nav-item"><a href="#goals-scope" class="nav-link" data-page="goals-scope">Goals and Scope</a></li>
+                    <li class="nav-item"><a href="#architecture" class="nav-link" data-page="architecture">High-Level Architecture</a></li>
+                    <li class="nav-item"><a href="#flow" class="nav-link" data-page="flow">End-to-End Flow</a></li>
+                    <li class="nav-item"><a href="#components" class="nav-link" data-page="components">Component Responsibilities</a></li>
+                    <li class="nav-item"><a href="#error-handling" class="nav-link" data-page="error-handling">Error Handling</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Page 1: Executive Summary -->
+            <div class="page active" id="executive-summary">
+                <div class="page-header">
+                    <h1>Executive Summary</h1>
+                </div>
+                <div class="content-section">
+                    <p>This document describes the <code>OffsetService</code>, a specialized Azure Function responsible for reversing financial transactions. The service is triggered by an event containing a pointer to a transaction that needs to be offset. Its primary purpose is to create a set of new, opposing transactions that effectively cancel out the original transaction and all its related accounting entries across multiple database tables and schemas (<code>dbo</code>, <code>adj</code>).</p>
+                    <p>The service systematically identifies the original transaction, its associated tax lots (<code>TAL</code>), tax lot offsets (<code>TLO</code>), and any corresponding adjustment (<code>ADJ</code>) entries. It then generates reversal records for each of these and packages them into a new payload for downstream persistence.</p>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" disabled>Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('goals-scope')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 2: Goals and Scope -->
+            <div class="page" id="goals-scope">
+                <div class="page-header">
+                    <h1>Goals and Scope</h1>
+                </div>
+                <div class="content-section">
+                    <h2>Primary Goals</h2>
+                    <ul>
+                        <li>To perform a complete and accurate reversal of a given financial transaction.</li>
+                        <li>To create offsetting and reversal entries for associated <code>TAL</code> and <code>TLO</code> records.</li>
+                        <li>To reverse corresponding entries in the <code>adj</code> schema.</li>
+                        <li>To mark the original transaction records as reversed.</li>
+                        <li>To produce a new transaction payload containing all the generated reversal records.</li>
+                    </ul>
+                    <h2>Scope</h2>
+                    <ul>
+                        <li>This document covers the internal architecture and reversal logic of the <code>OffsetService</code>.</li>
+                        <li>It details the step-by-step process of how a transaction is reversed across different data entities.</li>
+                    </ul>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('executive-summary')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('architecture')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 3: High-Level Architecture -->
+            <div class="page" id="architecture">
+                <div class="page-header">
+                    <h1>High-Level Architecture</h1>
+                </div>
+                <div class="content-section">
+                    <ul>
+                        <li><strong>Trigger</strong>: Azure Event Grid (<code>CloudEvent</code> schema). The incoming event payload is expected to contain the <code>original_agt_row_id</code> of the transaction to be reversed.</li>
+                        <li><strong>Function App</strong>: <code>OffsetService</code> (Azure Function).</li>
+                        <li><strong>Entry Point</strong>: <code>AtlasFunction.cs</code> — Standard entry point that delegates processing to <code>ProcessTask</code>.</li>
+                        <li><strong>Orchestrator</strong>: <code>Tasks/ProcessTask.cs</code> — Core orchestration layer coordinating the full reversal workflow.</li>
+                        <li><strong>Processors</strong>: The orchestrator invokes multiple specialized processors:
+                            <ul>
+                                <li><code>ProcessRulesAndCreateJsonForAGT</code> — Applies business rules to generate reversed AGT records.</li>
+                                <li><code>TalReversalProcessor</code> — Generates offsetting and reversal TAL records.</li>
+                                <li><code>ProcessTloRecords</code> — Generates offsetting and reversal TLO records.</li>
+                                <li><code>ProcessAdjRecords</code> — Reverses records in the adj schema.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Data Access</strong>: Uses <code>DatabaseResultProcessor</code> for data retrieval and <code>IDatabaseTask</code> for persistence.</li>
+                        <li><strong>Persistence</strong>: Produces a new blob containing reversal transactions and enqueues a new <code>CloudEvent</code> for downstream processing.</li>
+                    </ul>
+                    <h3>Architecture Diagram</h3>
+                    <div class="architecture-box">
+                        <pre>
++---------------------------+
+|   Event Grid (New Blob)   |
+| (with original_agt_row_id)|
++-------------+-------------+
+              |
+              v
++-------------+-------------+
+|   Azure Function          |
+|     OffsetService         |
+|   (AtlasFunction.cs)      |
++-------------+-------------+
+              |
+              v
++-------------+-------------+
+| ProcessTask.ExecuteAsync  |
+|  (Tasks/ProcessTask.cs)   |
++-------------+-------------+
+              |
+              | 1. Reverse Main AGT & TALs
+              | 2. Reverse TLO Adjustment AGT & TLOs
+              | 3. Reverse ADJ Schema Records
+              |
++--------------------------------+
+|  Reversal Pipeline             |
+| (Invokes multiple processors)  |
++--------------------------------+
+| -> TalReversalProcessor        |
+| -> ProcessTloRecords           |
+| -> ProcessAdjRecords           |
++--------------------------------+
+              |
+              v
++-------------+-------------+
+|   Finalization             |
+| (Create New Blob & Enqueue)|
++-------------+-------------+
+              |
+              v
++-----------------------------+
+| Downstream Service (Evaluate)|
++-----------------------------+
+                        </pre>
+                    </div>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('goals-scope')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('flow')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 4: End-to-End Flow -->
+            <div class="page" id="flow">
+                <div class="page-header">
+                    <h1>End-to-End Flow</h1>
+                </div>
+                <div class="content-section">
+                    <ol>
+                        <li>An Event Grid message triggers the <code>AtlasFunction</code>, providing the <code>original_agt_row_id</code> of the transaction to be reversed.</li>
+                        <li>The function invokes <code>ProcessTask.ExecuteAsync()</code>.</li>
+                        <li><code>ProcessTask</code> validates that <code>original_agt_row_id</code> is present.</li>
+                        <li>The service performs the reversal in a sequence of processing blocks:
+                            <ol type="a">
+                                <li><strong>Main Transaction Reversal (<code>dbo</code> schema)</strong>
+                                    <ol style="list-style-type: lower-roman;">
+                                        <li>Fetches the original <code>agt_adv_glbl_trans</code> record.</li>
+                                        <li>Updates the original AGT record to mark it as reversed (<code>SetReversalFlagAgt</code>).</li>
+                                        <li>Uses <code>ProcessRulesAndCreateJsonForAGT</code> to generate a new opposing AGT record.</li>
+                                        <li>Fetches associated <code>tal_tax_acct_ldgr</code> (TAL) records.</li>
+                                        <li>Invokes <code>TalReversalProcessor</code> to create and persist offsetting and reversal TAL records for each original tax lot.</li>
+                                    </ol>
+                                </li>
+                                <li><strong>TLO Adjustment Reversal</strong>
+                                     <ol style="list-style-type: lower-roman;">
+                                        <li>Searches for a related TLO Adjustment AGT record.</li>
+                                        <li>If found, marks the original TLO adjustment AGT as reversed and generates a new opposing TLO adjustment AGT record.</li>
+                                        <li>Fetches associated <code>tlo_taxlot_offset</code> (TLO) records.</li>
+                                        <li>Invokes <code>ProcessTloRecords</code> to create and persist offsetting and reversal TLO records.</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Adjustment Schema Reversal (<code>adj</code> schema)</strong>
+                                     <ol style="list-style-type: lower-roman;">
+                                        <li>Invokes <code>ProcessAdjRecords.ProcessAdjReversalsAsync</code> to reverse corresponding records in:
+                                            <ul>
+                                                <li><code>adj.agt</code></li>
+                                                <li><code>adj.gjs</code></li>
+                                                <li><code>adj.ged</code></li>
+                                            </ul>
+                                        </li>
+                                    </ol>
+                                </li>
+                            </ol>
+                        </li>
+                        <li>All newly generated reversed AGT records (from steps 4.a.iii and 4.b.ii) are collected into a <code>TransactionRoot</code> object.</li>
+                        <li>The <code>TransactionRoot</code> is serialized into a JSON payload.</li>
+                        <li>A new blob is created in storage containing the reversal transaction payload.</li>
+                        <li>A new <code>CloudEvent</code> referencing the new blob is enqueued for the downstream <code>EvaluateService</code>.</li>
+                    </ol>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('architecture')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('components')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 5: Component Responsibilities -->
+            <div class="page" id="components">
+                <div class="page-header">
+                    <h1>Component Responsibilities and Key Files</h1>
+                </div>
+                <div class="content-section">
+                    <div class="component-list">
+                        <div class="component-item">
+                            <strong><code>OffsetService.csproj</code></strong>
+                            <p>Defines project dependencies and embedded SQL files (e.g., <code>GetAgt.sql</code>, <code>UpdateAgt.sql</code>).</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>AtlasFunction.cs</code></strong>
+                            <p>Azure Function entry point delegating execution to <code>ProcessTask</code>.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Program.cs</code></strong>
+                            <p>Configures dependency injection and registers all processors (<code>TalReversalProcessor</code>, <code>ProcessTloRecords</code>, <code>ProcessAdjRecords</code>).</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Tasks/ProcessTask.cs</code></strong>
+                            <p>Main orchestrator coordinating the multi-stage reversal process.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Tasks/DatabaseResultProcessor.cs</code></strong>
+                            <p>Handles database fetch operations using embedded SQL.</p>
+                        </div>
+                         <div class="component-item">
+                            <strong><code>Tasks/TalReversalProcessor.cs</code></strong>
+                            <p>Implements offsetting and reversal logic for TAL records.</p>
+                        </div>
+                         <div class="component-item">
+                            <strong><code>Tasks/ProcessTloRecords.cs</code></strong>
+                            <p>Implements offsetting and reversal logic for TLO records.</p>
+                        </div>
+                         <div class="component-item">
+                            <strong><code>Tasks/ProcessAdjRecords.cs</code></strong>
+                            <p>Implements reversal logic for <code>adj</code> schema records.</p>
+                        </div>
+                         <div class="component-item">
+                            <strong><code>Tasks/ProcessRulesAndCreateJsonForAGT.cs</code></strong>
+                            <p>Applies rules to generate reversed AGT transaction objects.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('flow')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('error-handling')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 6: Error Handling and Resiliency -->
+            <div class="page" id="error-handling">
+                <div class="page-header">
+                    <h1>Error Handling and Resiliency</h1>
+                </div>
+                <div class="content-section">
+                    <ul>
+                        <li>The execution of <code>ProcessTask.ExecuteAsync</code> is wrapped by <code>RunProcessTaskAsync</code>, provided by the <code>AtlasExecutableTask</code> base class.</li>
+                        <li>This wrapper enforces standardized logging, exception handling, and dead-letter behavior.</li>
+                        <li>A <code>NonRecoverableException</code> is explicitly thrown if the provided <code>original_agt_row_id</code> cannot be found, preventing retries for invalid requests.</li>
+                        <li>The service integrates with <code>IIdempotencyService</code> to ensure that duplicate reversal events do not result in duplicate processing.</li>
+                    </ul>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('components')">Previous</button>
+                    <button class="nav-button next" disabled>Next</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Navigation functionality
+        function navigatePage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+                
+                // Update active nav link
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                const activeLink = document.querySelector(`[data-page="${pageId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Add click handlers to nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                navigatePage(pageId);
+            });
+        });
+
+        // Set first nav link as active on load
+        document.addEventListener('DOMContentLoaded', () => {
+             const firstLink = document.querySelector('.nav-link');
+             if(firstLink) {
+                firstLink.classList.add('active');
+             }
+        });
+    </script>
+</body>
+</html>
