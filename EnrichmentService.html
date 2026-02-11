@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnrichmentService - System Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --bg-main: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid var(--border);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-header h2 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-left-color: var(--accent);
+            padding-left: 2rem;
+        }
+
+        .nav-link.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1200px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .content-section {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-section h2 {
+            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-section h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .content-section p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .content-section ul {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-section li {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .content-section li::marker {
+            color: var(--accent);
+        }
+        
+        .architecture-box {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--secondary);
+            margin: 1.5rem 0;
+        }
+
+        .architecture-box pre {
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .component-list {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .component-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .component-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .component-item strong {
+            color: var(--accent);
+            font-size: 1.05rem;
+        }
+
+        .page-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nav-button.prev::before {
+            content: '←';
+            font-size: 1.2rem;
+        }
+
+        .nav-button.next::after {
+            content: '→';
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Documentation</h2>
+                <p>EnrichmentService</p>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#executive-summary" class="nav-link" data-page="executive-summary">Executive Summary</a></li>
+                    <li class="nav-item"><a href="#goals-scope" class="nav-link" data-page="goals-scope">Goals and Scope</a></li>
+                    <li class="nav-item"><a href="#architecture" class="nav-link" data-page="architecture">High-Level Architecture</a></li>
+                    <li class="nav-item"><a href="#flow" class="nav-link" data-page="flow">End-to-End Flow</a></li>
+                    <li class="nav-item"><a href="#components" class="nav-link" data-page="components">Component Responsibilities</a></li>
+                    <li class="nav-item"><a href="#error-handling" class="nav-link" data-page="error-handling">Error Handling</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Page 1: Executive Summary -->
+            <div class="page active" id="executive-summary">
+                <div class="page-header">
+                    <h1>Executive Summary</h1>
+                </div>
+                <div class="content-section">
+                    <p>This document describes the <code>EnrichmentService</code>, an Azure Function responsible for enriching financial transaction data. The service is triggered by an event containing a pointer to a transaction payload. It fetches the data, performs a series of enrichment steps by querying various database tables and applying business logic, and then passes the enriched data to a downstream service for further processing.</p>
+                    <p>The service is designed as a sequential pipeline, where a central orchestrator (<code>ProcessTask</code>) invokes a series of specialized services to handle different aspects of the enrichment process, such as counterparty details, financial data, investment information, and General Ledger (GL) mapping.</p>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" disabled>Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('goals-scope')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 2: Goals and Scope -->
+            <div class="page" id="goals-scope">
+                <div class="page-header">
+                    <h1>Goals and Scope</h1>
+                </div>
+                <div class="content-section">
+                    <h2>Primary Goals</h2>
+                    <ul>
+                        <li>To augment raw transaction data with comprehensive details from the system's master data.</li>
+                        <li>To apply standardized business logic for determining posting types, GL codes, and other financial attributes.</li>
+                        <li>To prepare the transaction data for downstream processing by the <code>EvaluateService</code>.</li>
+                        <li>To provide a resilient and idempotent processing pipeline.</li>
+                    </ul>
+                    <h2>Scope</h2>
+                    <ul>
+                        <li>This document covers the internal architecture and data flow of the <code>EnrichmentService</code>.</li>
+                        <li>It details the responsibilities of each major component and service.</li>
+                        <li>It outlines the sequence of enrichment steps performed on each transaction.</li>
+                    </ul>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('executive-summary')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('architecture')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 3: High-Level Architecture -->
+            <div class="page" id="architecture">
+                <div class="page-header">
+                    <h1>High-Level Architecture</h1>
+                </div>
+                <div class="content-section">
+                    <ul>
+                        <li><strong>Trigger</strong>: Azure Event Grid (<code>CloudEvent</code> schema). An event is received when a new transaction payload is ready for enrichment. An HTTP trigger is also available for testing and direct invocation.</li>
+                        <li><strong>Function App</strong>: <code>EnrichmentService</code> (Azure Function).</li>
+                        <li><strong>Entry Point</strong>: <code>AtlasFunction.cs</code> - A thin wrapper that receives the trigger event and delegates processing to the main orchestrator.</li>
+                        <li><strong>Orchestrator</strong>: <code>Tasks/ProcessTask.cs</code> - The core of the service. It retrieves the transaction data and orchestrates the entire enrichment pipeline by calling a series of specialized services.</li>
+                        <li><strong>Enrichment Services</strong>: A set of scoped services, each responsible for a specific part of the enrichment process (e.g., <code>CounterPartyService</code>, <code>FinancialDataService</code>, <code>GlmMappingService</code>).</li>
+                        <li><strong>Data Access</strong>: <code>DatabaseResultProcessor.cs</code> - A dedicated class for executing SQL queries (embedded as resources) and processing the results.</li>
+                        <li><strong>Persistence</strong>: The enriched payload is uploaded to a new blob, and a new <code>CloudEvent</code> is enqueued for the next service in the workflow.</li>
+                    </ul>
+                    <h3>Architecture Diagram</h3>
+                    <div class="architecture-box">
+                        <pre>
++---------------------------+
+|   Event Grid (New Blob)   |
++-------------+-------------+
+              |
+              v
++-------------+-------------+
+|   Azure Function          |
+|    `EnrichmentService`    |
+|   (AtlasFunction.cs)      |
++-------------+-------------+
+              |
+              v
++-------------+-------------+
+|  `ProcessTask.ExecuteAsync` |
+|   (Tasks/ProcessTask.cs)  |
++-------------+-------------+
+              |
+              v
++--------------------------------+
+|  Enrichment Pipeline           |
+| (Invokes multiple services)    |
++--------------------------------+
+| -> TransactionInitializer      |
+| -> PostingTypeService          |
+| -> CounterPartyService         |
+| -> FinancialDataService        |
+| -> InvestmentService           |
+| -> GlmMappingService           |
+| -> TransactionDataService      |
+| ... and others                 |
++--------------------------------+
+              |
+              v
++-------------+-------------+
+|   Finalization            |
+|  (Upload Blob & Enqueue)  |
++-------------+-------------+
+              |
+              v
++-------------+-------------+
+| Downstream Service (Evaluate)|
++---------------------------+
+                        </pre>
+                    </div>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('goals-scope')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('flow')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 4: End-to-End Flow -->
+            <div class="page" id="flow">
+                <div class="page-header">
+                    <h1>End-to-End Flow</h1>
+                </div>
+                <div class="content-section">
+                    <ol>
+                        <li>An <strong>Event Grid</strong> message (or an HTTP POST request) triggers the <code>AtlasFunction</code>.</li>
+                        <li>The function validates the input and invokes <code>ProcessTask.ExecuteAsync()</code>.</li>
+                        <li><code>ProcessTask</code> retrieves the transaction payload JSON from the blob URL specified in the event.</li>
+                        <li>The payload, which can contain multiple transactions, is deserialized into a <code>TransactionRoot</code> object.</li>
+                        <li><code>ProcessTask</code> iterates through each transaction in the <code>TransactionRoot</code>. For each transaction, it executes the following sequence of enrichment steps by calling the corresponding services:
+                            <ol type="a">
+                                <li><strong>Initial Data Fetch</strong>: Fetches baseline data for the transaction using <code>DatabaseResultProcessor</code>.</li>
+                                <li><strong>Transaction Initialization</strong>: <code>TransactionInitializer</code> sets up the transaction object.</li>
+                                <li><strong>Financial Data Population</strong>: <code>FinancialDataService</code> enriches various financial details.</li>
+                                <li><strong>Posting Type Application</strong>: <code>PostingTypeService</code> applies the correct posting strategy.</li>
+                                <li><strong>Counterparty Processing</strong>: <code>CounterPartyService</code> enriches counterparty information.</li>
+                                <li><strong>Financial Data Processing</strong>: <code>FinancialDataService</code> continues to process financial data.</li>
+                                <li><strong>Local Data Population</strong>: <code>TransactionDataService</code> populates local currency information.</li>
+                                <li><strong>Investment Details Processing</strong>: <code>InvestmentService</code> enriches investment-specific data.</li>
+                                <li><strong>JE and TGT Grouping</strong>: <code>TransactionDataService</code> handles journal entry and transaction grouping.</li>
+                                <li><strong>GLM Mapping</strong>: <code>GlmMappingService</code> performs General Ledger mapping.</li>
+                                <li><strong>Status Determination</strong>: <code>TransactionInitializer</code> sets the final status of the transaction.</li>
+                            </ol>
+                        </li>
+                        <li>After processing all transactions, the updated <code>TransactionRoot</code> is serialized back into a JSON string.</li>
+                        <li>A new blob containing the enriched JSON is created in storage.</li>
+                        <li>A new <code>CloudEvent</code> is created with a pointer to the new blob and is enqueued for the <code>EvaluateService</code>.</li>
+                        <li>If triggered via HTTP, the enriched JSON is returned directly in the response.</li>
+                    </ol>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('architecture')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('components')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 5: Component Responsibilities -->
+            <div class="page" id="components">
+                <div class="page-header">
+                    <h1>Component Responsibilities and Key Files</h1>
+                </div>
+                <div class="content-section">
+                    <div class="component-list">
+                        <div class="component-item">
+                            <strong><code>EnrichmentService.csproj</code></strong>
+                            <p>Defines the project structure, dependencies (<code>EtonSolutions.ServiceFramework.Runtime</code>, etc.), and embedded SQL files.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>AtlasFunction.cs</code></strong>
+                            <p>The function entry point. Handles both Event Grid and HTTP triggers and delegates to <code>ProcessTask</code>.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Program.cs</code></strong>
+                            <p>Sets up the dependency injection container, registering all the services required for the enrichment pipeline.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Tasks/ProcessTask.cs</code></strong>
+                            <p>The main orchestrator. It contains the high-level business logic and calls the various enrichment services in the correct order.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Tasks/DatabaseResultProcessor.cs</code></strong>
+                            <p>Handles all database interactions, executing embedded SQL queries and processing the results.</p>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Tasks/Processors/*.cs</code></strong>
+                            <p>This directory contains the specialized services that are injected into <code>ProcessTask</code>. Each service is responsible for a specific part of the enrichment logic:</p>
+                            <ul>
+                                <li><strong><code>TransactionInitializer</code></strong>: Initializes and finalizes the transaction object.</li>
+                                <li><strong><code>PostingTypeService</code></strong>: Manages posting type strategies.</li>
+                                <li><strong><code>CounterPartyService</code></strong>: Handles counterparty enrichment.</li>
+                                <li><strong><code>FinancialDataService</code></strong>: Enriches a wide range of financial data.</li>
+                                <li><strong><code>InvestmentService</code></strong>: Processes investment-specific details.</li>
+                                <li><strong><code>GlmMappingService</code></strong>: Manages GLM mapping logic.</li>
+                                <li><strong><code>TransactionDataService</code></strong>: Handles local data, JE, and TGT grouping.</li>
+                                <li><strong><code>BlobUpdater</code></strong>: Updates the JSON payload.</li>
+                            </ul>
+                        </div>
+                        <div class="component-item">
+                            <strong><code>Tasks/Sql/*.sql</code></strong>
+                            <p>Embedded SQL files containing the queries used for data retrieval.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('flow')">Previous</button>
+                    <button class="nav-button next" onclick="navigatePage('error-handling')">Next</button>
+                </div>
+            </div>
+
+            <!-- Page 6: Error Handling and Resiliency -->
+            <div class="page" id="error-handling">
+                <div class="page-header">
+                    <h1>Error Handling and Resiliency</h1>
+                </div>
+                <div class="content-section">
+                    <ul>
+                        <li>The core logic in <code>ProcessTask.ExecuteAsync</code> is wrapped within <code>RunProcessTaskAsync</code>. This is a method provided by the <code>AtlasExecutableTask</code> base class from the <code>EtonSolutions.ServiceFramework.Runtime</code>.</li>
+                        <li>This wrapper provides a standardized mechanism for logging, exception handling, and dead-lettering. If an unhandled exception occurs during the process, the base task will catch it, log the details, and move the triggering message to a dead-letter queue for later analysis, preventing infinite retry loops.</li>
+                        <li>The service also uses an <code>IIdempotencyService</code> to ensure that the same message is not processed multiple times.</li>
+                    </ul>
+                </div>
+                <div class="page-navigation">
+                    <button class="nav-button prev" onclick="navigatePage('components')">Previous</button>
+                    <button class="nav-button next" disabled>Next</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Navigation functionality
+        function navigatePage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+                
+                // Update active nav link
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                const activeLink = document.querySelector(`[data-page="${pageId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Add click handlers to nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                navigatePage(pageId);
+            });
+        });
+
+        // Set first nav link as active on load
+        document.addEventListener('DOMContentLoaded', () => {
+             const firstLink = document.querySelector('.nav-link');
+             if(firstLink) {
+                firstLink.classList.add('active');
+             }
+        });
+    </script>
+</body>
+</html>
